@@ -1,1 +1,209 @@
-@AGENTS.md
+# Business Application — CLAUDE.md
+
+Read this file at the start of every session.
+
+---
+
+## File Placement Rules
+
+- **Wiki-style `.md` files** (decisions, architecture notes, domain context, how-to guides, etc.) belong in `/Users/joshuahall/Documents/business-vault/wiki/` — not in this repository.
+- Only write `.md` files to this repo if they are directly part of the application source (e.g. `CLAUDE.md`, `README.md`).
+
+---
+
+## What This Is
+
+A Phase 1 internal web application for Lara Warwick, a UK chartered accountant, to manage client tax returns across her practice. It is used with real clients from day one.
+
+This is a **workflow management tool**, not a filing tool. It manages the work *around* submitting tax returns — document collection, deadlines, client communication, and sign-off. Actual filing stays in Lara's existing software (TaxCalc, HMRC portal).
+
+The longer-term goal is to productise this as B2B SaaS for UK chartered accountants (Phase 2). Phase 1 is the validation vehicle.
+
+---
+
+## Primary User
+
+**Lara Warwick** — chartered accountant, co-founder. She is the sole practitioner user in Phase 1. Her clients interact with the client-facing portal only (document upload, approval).
+
+There are two distinct roles:
+- **Accountant** (Lara) — manages clients, tracks deadlines, reviews documents, requests sign-off
+- **Client** — uploads documents, reviews draft return, gives approval
+
+Keep these roles cleanly separated in the auth model and data model from day one.
+
+---
+
+## Domain Context
+
+### UK Tax Year
+
+The UK tax year runs **6 April to 5 April** (not calendar year). Tax year 2025/26 = 6 April 2025 to 5 April 2026.
+
+### Two Regimes Running in Parallel
+
+Lara's practice has clients in both regimes simultaneously:
+
+| Regime | Who | Filing |
+|--------|-----|--------|
+| **SA100 (Self Assessment)** | All clients not yet mandated onto MTD | Annual return, deadline 31 January |
+| **MTD ITSA** | Sole traders + landlords with income >£50k (mandate from April 2026), >£30k (April 2027), >£20k (April 2028) | 4 quarterly updates + Final Declaration by 31 Jan |
+
+Phase 1 must handle both regimes at the same time.
+
+### MTD ITSA Quarterly Deadlines
+
+| Quarter | Period | Deadline |
+|---------|--------|----------|
+| Q1 | Apr – Jul | 7 August |
+| Q2 | Apr – Oct | 7 November |
+| Q3 | Apr – Jan | 7 February |
+| Q4 / EOPS | Full year | 7 May |
+
+Quarterly updates are **cumulative year-to-date**, not quarter-in-isolation.
+
+### Key Terminology
+
+- **SA100** — annual self-assessment tax return form
+- **MTD ITSA** — Making Tax Digital for Income Tax Self Assessment; live from April 2026 for clients with income >£50k
+- **EOPS** — End of Period Statement; year-end MTD summary for a business source
+- **Final Declaration** — replaces the SA100 for MTD clients; due 31 January
+- **64-8** — paper form authorising an agent to act for a client with HMRC
+- **SA103 / SA105 / SA106 / SA108** — SA100 supplementary pages (self-employment, UK property, foreign income, capital gains)
+- **Agent Services Account (ASA)** — HMRC account from which an agent acts on behalf of clients
+- **TaxCalc / IRIS / CCH** — incumbent tax filing software; Phase 1 sits alongside these, not replacing them
+- **P60** — employer certificate of pay and tax deducted (available by 31 May)
+- **P11D** — employer expenses/benefits form (available by 6 July)
+
+---
+
+## Phase 1 Feature Scope
+
+### In Scope
+
+| Feature | Pain point addressed |
+|---------|---------------------|
+| Client list with tax return status per tax year | Practice-wide deadline visibility |
+| Document collection checklist per client | Track what has / hasn't been received |
+| Deadline calendar + alerts | SA100 annual + MTD quarterly deadlines across all clients |
+| Client portal — document upload | Reduce email chasing |
+| Client approval / sign-off workflow | Written approval before filing; audit trail |
+| Structured data entry per client per tax year | Organise income data ahead of filing in TaxCalc |
+| Notes and audit trail per client | Workflow continuity, compliance record |
+
+### Explicitly Out of Scope — Phase 1
+
+- **HMRC API integration** — no submission to HMRC; filing stays in existing tools (TaxCalc, HMRC portal)
+- **CT600** (Corporation Tax) — not supported
+- **VAT** — not supported
+- **Bookkeeping** — not a bookkeeping tool
+- **Multi-practice / multi-user** — single practice, single accountant user in Phase 1
+- **HMRC Agent Authorisation API** — authorisation handled externally (paper 64-8 or existing tooling)
+
+### Data Model Constraint
+
+Phase 1 does not submit to HMRC. Phase 2 does. The data model for income, expenses, and tax data **must be structured to eventually map to HMRC API payloads** — design for this without building the integration yet.
+
+Key HMRC API resource types to keep in mind when naming and structuring data:
+- `self-employment` (SA103)
+- `uk-property` (SA105)
+- `savings-accounts`, `dividends-from-uk-companies` (investment income)
+- `capital-gains` (SA108)
+- `other-income` (employment income from P60)
+
+---
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 15 (App Router) + TypeScript |
+| Database | Neon (serverless PostgreSQL) |
+| ORM | Drizzle ORM |
+| Auth | Clerk |
+| File storage | Cloudflare R2 |
+| Email | Resend + React Email |
+| Hosting | Vercel |
+
+### Why These Choices
+
+- **Neon** over Supabase — cleaner, composable; Supabase bundles auth and storage that are better served by Clerk and R2 respectively
+- **Drizzle** over Prisma — TypeScript-first, SQL-transparent schema makes HMRC payload mapping legible; better fit for Neon + Vercel serverless
+- **Clerk** over Auth.js — first-class Next.js App Router integration; Organisations feature maps directly to Phase 2 multi-tenancy (each practice = one org)
+- **Cloudflare R2** over Vercel Blob — no egress fees (documents are read frequently); EU/UK region available for GDPR data residency
+
+---
+
+## Architecture Principles
+
+1. **UK-specific, not generic.** Tax years run April to April. Deadlines are fixed by statute. Don't abstract or generalise UK-specific dates and rules.
+2. **Two roles, cleanly separated.** Accountant and client are distinct users with distinct views. Never conflate them in the data model or auth.
+3. **Design for multi-tenancy, don't build it yet.** Phase 2 means multiple practices. Scope all data to a `practice_id` from day one — every table gets a `practice_id` foreign key — so multi-tenancy can be added without a schema rewrite.
+4. **No external integrations in Phase 1.** Xero, TaxCalc, HMRC API — all Phase 2. Phase 1 is a standalone tool.
+5. **HMRC payload shape in mind.** When designing the income/expense data model, name fields to match or map cleanly to HMRC API field names. This is a Phase 2 accelerant, not Phase 1 work.
+
+---
+
+## Build Phases
+
+The application is built incrementally, one technology layer at a time. Each phase produces a deployable checkpoint.
+
+### Phase A — UI Shell (React + Next.js)
+
+**Goal:** Full application structure is navigable with hardcoded data. Nothing persists.
+
+What gets built:
+- Next.js 15 project with TypeScript + Tailwind CSS
+- Client list page (mock data)
+- Individual client view with tax return status
+- Deadline calendar view
+- Basic navigation and layout, deployed to Vercel
+
+Bootstrap command:
+```
+npx create-next-app@latest business-application --typescript --tailwind --app --src-dir
+```
+
+**New concepts introduced:** React component model, Next.js App Router routing (folders = routes), server vs client components, TypeScript in JSX props.
+
+---
+
+### Phase B — Database Layer
+
+**Goal:** Data persists. Lara can add clients and set statuses in a real database.
+
+What gets built:
+- Neon PostgreSQL database connected to the app
+- Drizzle schema: `practice`, `client`, `tax_return`, `deadline` tables — all scoped by `practice_id`
+- Mock data replaced with real database reads
+- Create/edit client forms that persist
+
+**New concepts introduced:** Relational databases, Drizzle schema → DB column mapping, Next.js server components fetching data directly.
+
+---
+
+### Phase C — Authentication
+
+**Goal:** Secure, role-separated app safe to use with real clients.
+
+What gets built:
+- Clerk integrated into the app
+- Lara (accountant) signs in with email/password → full dashboard
+- Clients authenticate via magic link (email OTP) → client portal only
+- Route protection — unauthenticated users redirected to sign-in
+
+**New concepts introduced:** Auth middleware in Next.js, Clerk sessions, scoping DB queries by logged-in user's practice.
+
+---
+
+### Phase D — File Storage + Email
+
+**Goal:** Full Phase 1 feature scope complete. Clients upload documents; Lara is notified; deadline alerts automated.
+
+What gets built:
+- Cloudflare R2 bucket for document storage
+- Client portal: clients upload tax documents (P60, bank statements, etc.)
+- Document checklist in Lara's dashboard shows what has been received
+- Resend integration: deadline alerts + upload confirmation emails
+
+**New concepts introduced:** File uploads in Next.js (multipart form data, pre-signed URLs), object storage vs database, transactional email with React Email templates.
+
