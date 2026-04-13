@@ -186,7 +186,7 @@ Detailed plan: `wiki/topics/phase-a-implementation.md`
 **Goal:** Full application structure is navigable with hardcoded data. Nothing persists.
 
 What gets built:
-- Next.js 16 project with TypeScript + Tailwind CSS
+- Next.js 16.2.3 project with TypeScript + Tailwind CSS
 - Client list page (mock data)
 - Individual client view with tax return status
 - Deadline calendar view
@@ -226,7 +226,7 @@ What gets built:
 
 ### Phase D — File Storage + Email
 
-**Goal:** Full Phase 1 feature scope complete. Clients upload documents; Lara is notified; deadline alerts automated.
+**Goal:** Full Phase 1a feature scope complete. Clients upload documents; Lara is notified; deadline alerts automated.
 
 What gets built:
 - Cloudflare R2 bucket for document storage
@@ -235,4 +235,26 @@ What gets built:
 - Resend integration: deadline alerts + upload confirmation emails
 
 **New concepts introduced:** File uploads in Next.js (multipart form data, pre-signed URLs), object storage vs database, transactional email with React Email templates.
+
+---
+
+### Phase E — AI Preparation Layer (Phase 1b)
+
+**Prerequisite:** Lara has used Phases A–D with real clients for at least one full tax return cycle. Her observed experience informs the AI spec — this phase is not started until that experience exists.
+
+**Goal:** AI prepares draft tax returns from client documents; Lara reviews, adjusts, and submits. This changes the unit economics of the practice.
+
+What gets built:
+- Document extraction pipeline — uploaded PDFs and images parsed into structured income/expense records
+- Expense allowability engine — each expense classified against UK tax legislation (ITTOIA 2005 "wholly and exclusively" test); output is `allowed / disallowed / partial / needs-review` with plain-English reason and legislative citation
+- SA100 box mapping — classified figures mapped to correct SA100 boxes and supplementary pages
+- Draft return view — Lara sees a completed draft with every figure linked to its source document and the rule applied
+- Review queue — flagged items (dual-purpose expenses, missing documents, low-confidence extractions) surfaced for Lara to resolve before approving
+- Working paper export — full audit trail exportable for client file
+
+**Filing stays external** — Lara still files via TaxCalc / HMRC portal. This phase does not add HMRC API integration (that is Phase 2).
+
+**New concepts introduced:** LLM API integration, document extraction / OCR, confidence scoring, working paper generation.
+
+**Regulatory note:** The working paper trail (every figure traceable to source document and legislative rule) is a professional obligation under ICAEW AI guidance, not just good product design. Every figure must be explainable before Lara can sign off.
 
