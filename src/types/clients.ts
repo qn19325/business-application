@@ -1,9 +1,3 @@
-export const Regime = {
-  SA100: 'SA100',
-  MTD: 'MTD',
-} as const;
-export type Regime = (typeof Regime)[keyof typeof Regime];
-
 export const Status = {
   not_started: 'not_started',
   in_progress: 'in_progress',
@@ -13,17 +7,43 @@ export const Status = {
 } as const;
 
 type Status = (typeof Status)[keyof typeof Status];
+export type Client = SA100Client | MTDClient;
 
-export interface Client {
+interface ClientBase {
   id: string;
   niNumber: string; // e.g. AB 12 34 56 C
   name: string;
   email: string;
-  taxReturns: TaxReturn[];
-  regimeType: Regime;
 }
 
-export interface TaxReturn {
+interface SA100Client extends ClientBase {
+  regime: 'SA100';
+  taxReturns: SA100TaxReturn[];
+}
+
+interface MTDClient extends ClientBase {
+  regime: 'MTD';
+  taxReturns: MTDTaxReturn[];
+}
+
+export const SubmissionType = {
+  q_1: 'q_1',
+  q_2: 'q_2',
+  q_3: 'q_3',
+  q_4: 'q_4',
+  eops: 'eops',
+  final_declaration: 'final_declaration',
+} as const;
+export type SubmissionType = (typeof SubmissionType)[keyof typeof SubmissionType];
+
+export interface MTDTaxReturn {
+  deadline: Date;
+  status: Status;
+  startTaxYear: number;
+  submissionType: SubmissionType;
+}
+
+export interface SA100TaxReturn {
   deadline: Date;
   status: Status;
   startTaxYear: number;

@@ -1,29 +1,46 @@
-import { Client, Status, Regime } from '@/types/clients';
+import { Client, Status, SubmissionType } from '@/types/clients';
 
-export const clients: Client[] = [];
+const mtdClient: Client = {
+  id: 'mtd0',
+  niNumber: `AB 00 00 00 C`,
+  name: `Client MTD 0`,
+  email: `clientMTD0@mail.com`,
+  taxReturns: [
+    {
+      deadline: new Date('2025-08-07'),
+      status: Status.filed,
+      startTaxYear: 2024,
+      submissionType: SubmissionType.q_1,
+    },
+    {
+      deadline: new Date('2025-11-07'),
+      status: Status.in_progress,
+      startTaxYear: 2024,
+      submissionType: SubmissionType.q_2,
+    },
+    {
+      deadline: new Date('2026-02-07'),
+      status: Status.not_started,
+      startTaxYear: 2024,
+      submissionType: SubmissionType.q_3,
+    },
+  ],
+  regime: 'MTD',
+};
 
-const statuses = [
-  Status.not_started,
-  Status.in_progress,
-  Status.awaiting_client,
-  Status.ready_to_file,
-  Status.filed,
-];
+const sa100Client: Client = {
+  id: 'sa1000',
+  niNumber: `AB 00 00 01 C`,
+  name: `Client SA100 0`,
+  email: `clientSA1000@mail.com`,
+  taxReturns: [
+    {
+      deadline: new Date('2026-01-31'),
+      status: Status.not_started,
+      startTaxYear: 2025,
+    },
+  ],
+  regime: 'SA100',
+};
 
-for (let i = 0; i < statuses.length; i++) {
-  const client: Client = {
-    id: `${i}`,
-    niNumber: `AB 00 00 0${i} C`,
-    name: `Client ${i}`,
-    email: `client${i}@mail.com`,
-    taxReturns: [
-      {
-        deadline: new Date(),
-        status: statuses[i],
-        startTaxYear: new Date().getFullYear() - i,
-      },
-    ],
-    regimeType: i % 2 === 0 ? Regime.SA100 : Regime.MTD,
-  };
-  clients.push(client);
-}
+export const clients: Client[] = [mtdClient, sa100Client];
