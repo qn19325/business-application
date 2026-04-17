@@ -1,3 +1,5 @@
+// TODO: break apart into api models and internal models
+
 export const Status = {
   not_started: 'not_started',
   in_progress: 'in_progress',
@@ -45,12 +47,12 @@ interface TaxReturn {
 }
 
 export interface MTDTaxReturn extends TaxReturn {
+  type: 'MTD';
   submissionType: SubmissionType;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SA100TaxReturn extends TaxReturn {
-  // TODO: fill with other fields when we have more insight
+  type: 'SA100';
 }
 
 export interface CheckListItem {

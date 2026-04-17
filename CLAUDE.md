@@ -211,7 +211,7 @@ Detailed step-by-step implementation plans live in the wiki at `/Users/joshuahal
 | A4 — App layout + navigation              | ✅ Done |
 | A5 — Mock data                            | ✅ Done |
 | A6 — Client list page (`/clients`)        | ✅ Done |
-| A7 — Client detail page (`/clients/[id]`) | 🔧 In Progress — page scaffold done (header, checklist, notes); TaxReturnCard component remaining |
+| A7 — Client detail page (`/clients/[id]`) | 🔧 In Progress — `TaxReturnCard` component created (`app/clients/[id]/TaxReturnCard.tsx`): `'use client'`, `TaxReturnCardProps` type with `Omit` for `deadline` serialisation, `name` prop added; header fields rendering; remaining: `useState` collapsed/expanded toggle, checklist render inside expanded state, wire into `page.tsx` (replace placeholder, convert `deadline` to string, pass `name`) |
 | A8 — Deadline calendar page (`/calendar`) | Pending |
 | A9 — Deploy to Vercel                     | Pending |
 

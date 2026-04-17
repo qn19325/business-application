@@ -12,6 +12,7 @@ const mtdClient: Client = {
       status: Status.filed,
       startTaxYear: 2024,
       submissionType: SubmissionType.q_1,
+      type: 'MTD',
       checkList: [
         { text: 'Sales/income records for the quarter', received: true },
         { text: 'Business expense receipts for the quarter', received: true },
@@ -25,6 +26,7 @@ const mtdClient: Client = {
       status: Status.in_progress,
       startTaxYear: 2024,
       submissionType: SubmissionType.q_2,
+      type: 'MTD',
       checkList: [
         { text: 'Sales/income records for the quarter', received: true },
         { text: 'Business expense receipts for the quarter', received: true },
@@ -38,6 +40,7 @@ const mtdClient: Client = {
       status: Status.not_started,
       startTaxYear: 2024,
       submissionType: SubmissionType.q_3,
+      type: 'MTD',
       checkList: [
         { text: 'Sales/income records for the quarter', received: true },
         { text: 'Business expense receipts for the quarter', received: true },
@@ -60,6 +63,7 @@ const sa100Client: Client = {
       deadline: new Date('2026-01-31'),
       status: Status.not_started,
       startTaxYear: 2025,
+      type: 'SA100',
       checkList: [
         { text: 'P60 (employment income)', received: true },
         { text: 'P11D (benefits in kind, if applicable)', received: true },
