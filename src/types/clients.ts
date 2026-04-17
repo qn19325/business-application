@@ -36,15 +36,24 @@ export const SubmissionType = {
 } as const;
 export type SubmissionType = (typeof SubmissionType)[keyof typeof SubmissionType];
 
-export interface MTDTaxReturn {
+interface TaxReturn {
+  id: string;
   deadline: Date;
   status: Status;
   startTaxYear: number;
+  checkList: CheckListItem[];
+}
+
+export interface MTDTaxReturn extends TaxReturn {
   submissionType: SubmissionType;
 }
 
-export interface SA100TaxReturn {
-  deadline: Date;
-  status: Status;
-  startTaxYear: number;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SA100TaxReturn extends TaxReturn {
+  // TODO: fill with other fields when we have more insight
+}
+
+export interface CheckListItem {
+  text: string;
+  received: boolean;
 }
