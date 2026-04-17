@@ -209,8 +209,8 @@ Detailed step-by-step implementation plans live in the wiki at `/Users/joshuahal
 | A2 — Version control (GitHub)             | ✅ Done |
 | A3 — Clean up boilerplate                 | ✅ Done |
 | A4 — App layout + navigation              | ✅ Done |
-| A5 — Mock data                            | Pending |
-| A6 — Client list page (`/clients`)        | Pending |
+| A5 — Mock data                            | ✅ Done |
+| A6 — Client list page (`/clients`)        | ✅ Done |
 | A7 — Client detail page (`/clients/[id]`) | Pending |
 | A8 — Deadline calendar page (`/calendar`) | Pending |
 | A9 — Deploy to Vercel                     | Pending |
