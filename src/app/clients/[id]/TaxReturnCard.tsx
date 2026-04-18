@@ -9,15 +9,7 @@ export type TaxReturnCardProps =
   | (Omit<SA100TaxReturn, 'deadline'> & { deadline: string; name: string })
   | (Omit<MTDTaxReturn, 'deadline'> & { deadline: string; name: string });
 
-export default function Card({
-  name,
-  id,
-  deadline,
-  status,
-  startTaxYear,
-  checkList,
-  type,
-}: TaxReturnCardProps) {
+export default function Card(props: TaxReturnCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -26,18 +18,18 @@ export default function Card({
         className="cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50"
         onClick={() => setIsExpanded((prev) => !prev)}
       >
-        <td className="py-3 pr-5">{name}</td>
-        <td className="py-3 pr-5">{deadline}</td>
+        <td className="py-3 pr-5">{props.name}</td>
+        <td className="py-3 pr-5">{props.deadline}</td>
         <td className="py-3 pr-5">
-          <StatusBadge status={status} />
+          <StatusBadge status={props.status} />
         </td>
-        <td className="py-3 pr-5">{startTaxYear}</td>
-        <td className="py-3 pr-5">{type}</td>
+        <td className="py-3 pr-5">{props.startTaxYear}</td>
+        <td className="py-3 pr-5">{props.type === 'MTD' ? `${props.type} - ${props.submissionType}` : props.type}</td>
       </tr>
       {isExpanded && (
         <tr>
           <td colSpan={5} className="pb-3">
-            {checkList.map((item) => (
+            {props.checkList.map((item) => (
               <div key={item.text} className="flex items-center gap-2 py-1 text-sm text-slate-600">
                 <div
                   className={`h-3 w-3 rounded-full ${item.received ? 'bg-green-500' : 'bg-red-500'}`}

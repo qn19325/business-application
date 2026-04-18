@@ -208,7 +208,9 @@ Detailed step-by-step implementation plans and design references live in the wik
 
 ### Current status
 
-**Active phase: A — UI Shell**
+**Active phase: B — Database Layer**
+
+### Phase A — UI Shell ✅ Complete
 
 | Step                                      | Status  |
 | ----------------------------------------- | ------- |
@@ -218,9 +220,9 @@ Detailed step-by-step implementation plans and design references live in the wik
 | A4 — App layout + navigation              | ✅ Done |
 | A5 — Mock data                            | ✅ Done |
 | A6 — Client list page (`/clients`)        | ✅ Done |
-| A7 — Client detail page (`/clients/[id]`) | ✅ Done (MTD `submissionType` not yet displayed in `TaxReturnCard`) |
+| A7 — Client detail page (`/clients/[id]`) | ✅ Done |
 | A8 — Deadline calendar page (`/calendar`) | ✅ Done |
-| A9 — Deploy to Vercel                     | Pending |
+| A9 — Deploy to Vercel                     | ✅ Done — https://business-application-dun.vercel.app |
 
 Detailed plan: `wiki/topics/phase-a-implementation.md`
 Design: `wiki/topics/ui-design.md`
