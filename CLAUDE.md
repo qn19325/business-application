@@ -205,6 +205,7 @@ Detailed step-by-step implementation plans and design references live in the wik
 | `wiki/topics/application-build-phases.md` | High-level overview of all five phases (A–E) |
 | `wiki/topics/ui-design.md` | Design system: colour palette, typography, status pills, per-screen layout mockups |
 | `wiki/decisions/type-mapping-strategy.md` | Decision to defer api.types/models split to Phase B; explains the Omit patches in Phase A |
+| `wiki/topics/phase-b-database-schema.md` | Phase B database schema: ERD, table designs, and design decisions |
 
 ### Current status
 
@@ -251,7 +252,7 @@ What gets built:
 
 What gets built:
 
-- Neon PostgreSQL database connected to the app
+- Local PostgreSQL database (Neon connected before first production deploy)
 - Drizzle schema: `practice`, `client`, `tax_return`, `deadline` tables — all scoped by `practice_id`
 - Mock data replaced with real database reads
 - Create/edit client forms that persist
