@@ -9,11 +9,17 @@ const mtdClient: Client = {
   taxReturns: [
     {
       id: 'mtd_0',
-      deadline: new Date('2025-08-07'),
       status: Status.filed,
       startTaxYear: 2024,
-      submissionType: SubmissionType.q_1,
       type: 'MTD',
+      submissions: [
+        {
+          id: 'mtd_sub_0',
+          status: Status.filed,
+          deadline: new Date('2025-08-07'),
+          submissionType: SubmissionType.q_1,
+        },
+      ],
       checkList: [
         { text: 'Sales/income records for the quarter', done: true },
         { text: 'Business expense receipts for the quarter', done: true },
@@ -23,11 +29,17 @@ const mtdClient: Client = {
     },
     {
       id: 'mtd_1',
-      deadline: new Date('2025-11-07'),
       status: Status.in_progress,
       startTaxYear: 2024,
-      submissionType: SubmissionType.q_2,
       type: 'MTD',
+      submissions: [
+        {
+          id: 'mtd_sub_1',
+          status: Status.filed,
+          deadline: new Date('2025-11-07'),
+          submissionType: SubmissionType.q_2,
+        },
+      ],
       checkList: [
         { text: 'Sales/income records for the quarter', done: true },
         { text: 'Business expense receipts for the quarter', done: true },
@@ -37,11 +49,17 @@ const mtdClient: Client = {
     },
     {
       id: 'mtd_2',
-      deadline: new Date('2026-02-07'),
       status: Status.not_started,
       startTaxYear: 2024,
-      submissionType: SubmissionType.q_3,
       type: 'MTD',
+      submissions: [
+        {
+          id: 'mtd_sub_2',
+          status: Status.not_started,
+          deadline: new Date('2026-02-07'),
+          submissionType: SubmissionType.q_3,
+        },
+      ],
       checkList: [
         { text: 'Sales/income records for the quarter', done: true },
         { text: 'Business expense receipts for the quarter', done: true },

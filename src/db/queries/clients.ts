@@ -1,0 +1,94 @@
+import type { InferSelectModel } from 'drizzle-orm';
+import type * as schema from '../schema';
+import { Client, ClientBase } from '@/types/clients';
+import { db } from '../index';
+
+const PRACTICE_ID = 'f3253c32-8895-468f-baa0-cdc71ca72a90';
+
+type RawClient = InferSelectModel<typeof schema.client> & {
+  taxReturns: (InferSelectModel<typeof schema.taxReturn> & {
+    mtdSubmissions: InferSelectModel<typeof schema.mtdSubmission>[];
+    checklistItems: InferSelectModel<typeof schema.checklistItem>[];
+  })[];
+};
+
+function mapClient(cli: RawClient): Client {
+  const base: ClientBase = {
+    id: cli.id,
+    niNumber: cli.niNumber,
+    firstName: cli.firstName,
+    lastName: cli.lastName,
+    email: cli.email,
+  };
+
+  if (cli.regime === 'MTD') {
+    return {
+      ...base,
+      regime: cli.regime,
+      taxReturns: cli.taxReturns.map((taxReturn) => ({
+        type: 'MTD' as const,
+        id: taxReturn.id,
+        startTaxYear: taxReturn.taxYear,
+        status: taxReturn.status,
+        submissions: taxReturn.mtdSubmissions.map((submission) => ({
+          id: submission.id,
+          submissionType: submission.submissionType,
+          deadline: new Date(submission.deadline),
+          status: submission.status,
+        })),
+        checkList: taxReturn.checklistItems.map((item) => ({
+          text: item.label,
+          done: item.done,
+        })),
+      })),
+    };
+  }
+
+  return {
+    ...base,
+    regime: cli.regime,
+    taxReturns: cli.taxReturns.map((taxReturn) => ({
+      type: 'SA100' as const,
+      id: taxReturn.id,
+      startTaxYear: taxReturn.taxYear,
+      status: taxReturn.status,
+      deadline: new Date(taxReturn.deadline),
+      checkList: taxReturn.checklistItems.map((item) => ({
+        text: item.label,
+        done: item.done,
+      })),
+    })),
+  };
+}
+
+export function getClients(): Promise<Client[]> {
+  return db.query.client
+    .findMany({
+      where: (table, { eq }) => eq(table.practiceId, PRACTICE_ID),
+      with: {
+        taxReturns: {
+          with: {
+            mtdSubmissions: true,
+            checklistItems: true,
+          },
+        },
+      },
+    })
+    .then((res) => res.map(mapClient));
+}
+
+export function getClientById(id: string): Promise<Client | null> {
+  return db.query.client
+    .findFirst({
+      where: (table, { eq, and }) => and(eq(table.id, id), eq(table.practiceId, PRACTICE_ID)),
+      with: {
+        taxReturns: {
+          with: {
+            mtdSubmissions: true,
+            checklistItems: true,
+          },
+        },
+      },
+    })
+    .then((cli) => (cli ? mapClient(cli) : null));
+}

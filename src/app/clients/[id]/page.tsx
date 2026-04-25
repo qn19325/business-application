@@ -1,11 +1,10 @@
-import { clients } from '@/lib/mock-data';
 import { notFound } from 'next/navigation';
-import { TaxReturnCardProps } from './TaxReturnCard';
 import Card from './TaxReturnCard';
+import { getClientById } from '@/db/queries/clients';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
-  const client = clients.find((cli) => cli.id === id);
+  const client = await getClientById(id);
 
   if (!client) {
     notFound();
@@ -28,12 +27,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         </thead>
         <tbody>
           {client.taxReturns.map((taxReturn) => {
-            const taxReturnCardProps: TaxReturnCardProps = {
-              ...taxReturn,
-              name: client.firstName,
-              deadline: taxReturn.deadline.toLocaleDateString('en-GB'),
-            };
-            return <Card key={taxReturn.id} {...taxReturnCardProps} />;
+            return <Card key={taxReturn.id} name={client.firstName} {...taxReturn} />;
           })}
         </tbody>
       </table>

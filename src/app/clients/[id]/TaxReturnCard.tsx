@@ -4,10 +4,9 @@ import StatusBadge from '@/components/StatusBadge';
 import { MTDTaxReturn, SA100TaxReturn } from '@/types/clients';
 import { useState } from 'react';
 
-// TODO: remove this when we move to real data and update to internal models vs api models
 export type TaxReturnCardProps =
-  | (Omit<SA100TaxReturn, 'deadline'> & { deadline: string; name: string })
-  | (Omit<MTDTaxReturn, 'deadline'> & { deadline: string; name: string });
+  | (SA100TaxReturn & { name: string })
+  | (MTDTaxReturn & { name: string });
 
 export default function Card(props: TaxReturnCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -19,14 +18,14 @@ export default function Card(props: TaxReturnCardProps) {
         onClick={() => setIsExpanded((prev) => !prev)}
       >
         <td className="py-3 pr-5">{props.name}</td>
-        <td className="py-3 pr-5">{props.deadline}</td>
+        <td className="py-3 pr-5">
+          {props.type === 'SA100' ? props.deadline.toLocaleDateString() : ''}
+        </td>
         <td className="py-3 pr-5">
           <StatusBadge status={props.status} />
         </td>
         <td className="py-3 pr-5">{props.startTaxYear}</td>
-        <td className="py-3 pr-5">
-          {props.type === 'MTD' ? `${props.type} - ${props.submissionType}` : props.type}
-        </td>
+        <td className="py-3 pr-5">{props.type}</td>
       </tr>
       {isExpanded && (
         <tr>

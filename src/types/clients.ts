@@ -12,7 +12,7 @@ export type Status = (typeof Status)[keyof typeof Status];
 export type Client = SA100Client | MTDClient;
 export type Regime = 'SA100' | 'MTD';
 
-interface ClientBase {
+export interface ClientBase {
   id: string;
   niNumber: string; // e.g. AB 12 34 56 C
   firstName: string;
@@ -42,19 +42,26 @@ export type SubmissionType = (typeof SubmissionType)[keyof typeof SubmissionType
 
 interface TaxReturn {
   id: string;
-  deadline: Date;
-  status: Status;
   startTaxYear: number;
   checkList: CheckListItem[];
+  status: Status;
 }
 
 export interface MTDTaxReturn extends TaxReturn {
   type: 'MTD';
+  submissions: MTDSubmission[];
+}
+
+export interface MTDSubmission {
   submissionType: SubmissionType;
+  id: string;
+  deadline: Date;
+  status: Status;
 }
 
 export interface SA100TaxReturn extends TaxReturn {
   type: 'SA100';
+  deadline: Date;
 }
 
 export interface CheckListItem {

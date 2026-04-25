@@ -1,7 +1,8 @@
-import { clients } from '@/lib/mock-data';
 import ClientListItem from './ClientListItem';
+import { getClients } from '@/db/queries/clients';
 
 export default async function Page() {
+  const clients = await getClients();
   return (
     <div className="overflow-y-auto bg-slate-50 p-8">
       <div className="mb-6 text-xl font-semibold text-slate-900">Clients</div>

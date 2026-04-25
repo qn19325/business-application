@@ -13,6 +13,7 @@ async function main() {
       lastName: 'Client MTD 0 LAST',
       email: 'clientMTD_0@mail.com',
       phoneNumber: '00000000000',
+      regime: 'MTD',
     })
     .returning();
 
@@ -25,6 +26,7 @@ async function main() {
       lastName: 'Client SA100 0 LAST',
       email: 'clientSA100_0@mail.com',
       phoneNumber: '00000000001',
+      regime: 'SA100',
     })
     .returning();
 
@@ -93,4 +95,9 @@ async function main() {
   });
 }
 
-main();
+main()
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

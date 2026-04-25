@@ -35,6 +35,7 @@ export const client = pgTable('client', {
   niNumber: text().notNull(),
   email: text().notNull(),
   phoneNumber: text(),
+  regime: regimeEnum().notNull(),
 });
 
 export const taxReturn = pgTable('tax_return', {
@@ -85,7 +86,25 @@ export const clientRelations = relations(client, ({ many }) => ({
   taxReturns: many(taxReturn),
 }));
 
-export const taxReturnRelations = relations(taxReturn, ({ many }) => ({
+export const taxReturnRelations = relations(taxReturn, ({ one, many }) => ({
+  client: one(client, {
+    fields: [taxReturn.clientId],
+    references: [client.id],
+  }),
   mtdSubmissions: many(mtdSubmission),
   checklistItems: many(checklistItem),
+}));
+
+export const mtdSubmissionRelations = relations(mtdSubmission, ({ one }) => ({
+  taxReturn: one(taxReturn, {
+    fields: [mtdSubmission.taxReturnId],
+    references: [taxReturn.id],
+  }),
+}));
+
+export const checklistItemRelations = relations(checklistItem, ({ one }) => ({
+  taxReturn: one(taxReturn, {
+    fields: [checklistItem.taxReturnId],
+    references: [taxReturn.id],
+  }),
 }));

@@ -1,10 +1,11 @@
 import { getDeadlineEntries } from '@/lib/helpers';
-import { clients } from '@/lib/mock-data';
 import { DeadlineEntry } from '@/types/calendarModels';
 import { Fragment } from 'react';
 import StatusBadge from '@/components/StatusBadge';
+import { getClients } from '@/db/queries/clients';
 
 export default async function Page() {
+  const clients = await getClients();
   const pageData: DeadlineEntry[] = getDeadlineEntries(clients);
 
   const groupedDeadlineEntries: Record<string, DeadlineEntry[]> = pageData.reduce(

@@ -1,31 +1,33 @@
 import { DeadlineEntry } from '@/types/calendarModels';
-import { Client } from '@/types/clients';
+import { Client, MTDTaxReturn, SA100TaxReturn } from '@/types/clients';
 
 export function getDeadlineEntries(clients: Client[]): DeadlineEntry[] {
   const deadlineEntries: DeadlineEntry[] = clients.flatMap((client) => {
-    return client.taxReturns.map((taxReturn) => {
+    return (client.taxReturns as (SA100TaxReturn | MTDTaxReturn)[]).flatMap((taxReturn): DeadlineEntry[] => {
       if (taxReturn.type === 'MTD') {
-        return {
+        return taxReturn.submissions.map((submission) => ({
+          name: `${client.firstName} ${client.lastName}`,
+          id: submission.id,
+          deadline: submission.deadline,
+          status: submission.status,
+          startTaxYear: taxReturn.startTaxYear,
+          type: taxReturn.type,
+          submissionType: submission.submissionType,
+          taxYearLabel: `${taxReturn.startTaxYear}/${taxReturn.startTaxYear + 1}`,
+        }));
+      }
+
+      return [
+        {
           name: `${client.firstName} ${client.lastName}`,
           id: taxReturn.id,
           deadline: taxReturn.deadline,
           status: taxReturn.status,
           startTaxYear: taxReturn.startTaxYear,
           type: taxReturn.type,
-          submissionType: taxReturn.submissionType,
           taxYearLabel: `${taxReturn.startTaxYear}/${taxReturn.startTaxYear + 1}`,
-        };
-      }
-
-      return {
-        name: `${client.firstName} ${client.lastName}`,
-        id: taxReturn.id,
-        deadline: taxReturn.deadline,
-        status: taxReturn.status,
-        startTaxYear: taxReturn.startTaxYear,
-        type: taxReturn.type,
-        taxYearLabel: `${taxReturn.startTaxYear}/${taxReturn.startTaxYear + 1}`,
-      };
+        },
+      ];
     });
   });
   return deadlineEntries.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());

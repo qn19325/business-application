@@ -13,9 +13,20 @@ export default function ClientListItem(props: ClientListItemProps) {
   const firstUnfiledReturn = props.taxReturns.find(
     (taxReturn) => taxReturn.status !== Status.filed,
   );
-  const nextDeadline = firstUnfiledReturn
-    ? firstUnfiledReturn.deadline.toLocaleDateString('en-GB')
-    : 'n/a';
+
+  let nextDeadline = '';
+
+  if (firstUnfiledReturn) {
+    if (firstUnfiledReturn.type === 'SA100') {
+      nextDeadline = firstUnfiledReturn.deadline.toLocaleDateString('en-GB');
+    } else {
+      const firstUnfiledSubmission = firstUnfiledReturn.submissions.find(
+        (submission) => submission.status !== Status.filed,
+      );
+      nextDeadline = firstUnfiledSubmission?.deadline.toLocaleDateString() ?? '';
+    }
+  }
+
   const status = firstUnfiledReturn ? firstUnfiledReturn.status : Status.filed;
 
   return (
