@@ -11,39 +11,22 @@ import {
   unique,
   index,
 } from 'drizzle-orm/pg-core';
+import { Status, Regime, SubmissionType } from '@/types/clients';
+import { DocumentType } from '@/types/documents';
 
-export const statusEnum = pgEnum('status', [
-  'not_started',
-  'in_progress',
-  'awaiting_client',
-  'ready_to_file',
-  'filed',
-]);
+export const statusEnum = pgEnum('status', Object.values(Status) as [Status, ...Status[]]);
 
-export const regimeEnum = pgEnum('regime', ['mtd', 'sa100']);
+export const regimeEnum = pgEnum('regime', Object.values(Regime) as [Regime, ...Regime[]]);
 
-export const submissionTypeEnum = pgEnum('submission_type', [
-  'q_1',
-  'q_2',
-  'q_3',
-  'q_4',
-  'eops',
-  'final_declaration',
-]);
+export const submissionTypeEnum = pgEnum(
+  'submission_type',
+  Object.values(SubmissionType) as [SubmissionType, ...SubmissionType[]],
+);
 
-export const documentTypeEnum = pgEnum('document_type', [
-  'p60',
-  'p11d',
-  'bank_statements',
-  'self_employment',
-  'rental',
-  'dividends',
-  'pension',
-  'capital_gains',
-  'income',
-  'expenses',
-  'mileage_log',
-]);
+export const documentTypeEnum = pgEnum(
+  'document_type',
+  Object.values(DocumentType) as [DocumentType, ...DocumentType[]],
+);
 
 export const practice = pgTable('practice', {
   id: uuid().primaryKey().defaultRandom(),
