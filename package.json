@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx --env-file=.env.local src/db/seed.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -30,6 +32,7 @@
     "prettier": "^3.8.2",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

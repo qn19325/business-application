@@ -255,6 +255,8 @@ npm run build
 
 `npm run format` fixes formatting automatically if needed. `npm run build` includes ESLint and type checking — must pass before shipping.
 
+**Local DB** — `npm run db:push` applies schema changes; `npm run db:seed` reseeds. (Both load `.env.local`.)
+
 Also before committing:
 
 - Review code against the engineering conventions in this file
