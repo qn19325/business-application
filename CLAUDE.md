@@ -7,7 +7,7 @@ Read this file at the start of every session.
 ## Current State
 
 **Active phase: B — Database Layer**
-**Next step: B5 — Query files + wire up pages (query files not yet written)**
+**Next step: B7 — Connect Neon (production database)**
 **Deployed (Phase A):** https://business-application-dun.vercel.app
 
 ---
@@ -305,8 +305,8 @@ Plans and design references live in the wiki at `/Users/joshuahall/Documents/bus
 | B2 — Drizzle ORM installed + configured   | ✅ Done                                                     |
 | B3 — Schema designed + migration applied  | ✅ Done — `src/db/schema.ts`; migrations regenerated via `drizzle-kit push` |
 | B4 — Drizzle client (`src/db/index.ts`)   | ✅ Done                                                                     |
-| B5 — Replace mock data with real DB reads | 🔄 In progress — relations + seed done; query files + page wiring remaining |
-| B6 — Create/edit client forms             | 🔲 Todo                                                     |
+| B5 — Replace mock data with real DB reads | ✅ Done                                                                     |
+| B6 — Create/edit client forms             | ✅ Done — `createClient` server action; `AddClientModal` component          |
 | B7 — Connect Neon (production database)   | 🔲 Todo                                                     |
 
 Schema design: `wiki/topics/phase-b-database-schema.md`

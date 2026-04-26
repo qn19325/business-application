@@ -17,45 +17,58 @@ interface ClientActionsProps {
   regime: Regime;
 }
 
-export default async function createClient(props: ClientActionsProps) {
-  await db.transaction(async (tx) => {
-    const [newClient] = await tx
-      .insert(client)
-      .values({
-        practiceId: PRACTICE_ID,
-        firstName: props.firstName,
-        lastName: props.lastName,
-        niNumber: props.niNumber,
-        email: props.email,
-        phoneNumber: props.phone,
-        regime: props.regime,
-      })
-      .returning();
+type CreateClientResult = { success: true } | { success: false; error: string };
 
-    const [newTaxReturn] = await tx
-      .insert(taxReturn)
-      .values({
-        practiceId: PRACTICE_ID,
-        clientId: newClient.id,
-        taxYear: currentTaxYear(),
-        regime: props.regime,
-        status: Status.not_started,
-        deadline: `${currentTaxYear() + 1}-01-31`,
-      })
-      .returning();
-
-    const checkList = props.regime === 'MTD' ? mtdChecklist : sa100Checklist;
-    await Promise.all(
-      checkList.map((item) => {
-        return tx.insert(checklistItem).values({
+export default async function createClient(props: ClientActionsProps): Promise<CreateClientResult> {
+  try {
+    await db.transaction(async (tx) => {
+      const [newClient] = await tx
+        .insert(client)
+        .values({
           practiceId: PRACTICE_ID,
-          taxReturnId: newTaxReturn.id,
-          documentType: item.documentType,
-          label: item.label,
-          done: false,
-        });
-      }),
-    );
-  });
-  revalidatePath('/clients');
+          firstName: props.firstName,
+          lastName: props.lastName,
+          niNumber: props.niNumber,
+          email: props.email,
+          phoneNumber: props.phone,
+          regime: props.regime,
+        })
+        .returning();
+
+      const [newTaxReturn] = await tx
+        .insert(taxReturn)
+        .values({
+          practiceId: PRACTICE_ID,
+          clientId: newClient.id,
+          taxYear: currentTaxYear(),
+          regime: props.regime,
+          status: Status.not_started,
+          deadline: `${currentTaxYear() + 1}-01-31`,
+        })
+        .returning();
+
+      const checkList = props.regime === 'MTD' ? mtdChecklist : sa100Checklist;
+      await Promise.all(
+        checkList.map((item) => {
+          return tx.insert(checklistItem).values({
+            practiceId: PRACTICE_ID,
+            taxReturnId: newTaxReturn.id,
+            documentType: item.documentType,
+            label: item.label,
+            done: false,
+          });
+        }),
+      );
+    });
+    revalidatePath('/clients');
+
+    return {
+      success: true,
+    };
+  } catch {
+    return {
+      success: false,
+      error: 'Failed to create client',
+    };
+  }
 }
