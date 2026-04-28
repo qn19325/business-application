@@ -46,24 +46,25 @@ export default async function createClient(props: ClientActionsProps): Promise<C
         })
         .returning();
 
-        
-        if (props.regime === Regime.mtd) {
-          const quarters = [                                                                                                              
-           { submissionType: SubmissionType.q_1, deadline: `${currentTaxYear()}-08-07` },                                                                                                                                                                                                 
-           { submissionType: SubmissionType.q_2, deadline: `${currentTaxYear()}-11-07` },                                                                                                                                                                                                 
-           { submissionType: SubmissionType.q_3, deadline: `${currentTaxYear() + 1}-02-07` },                                                                                                                                                                                             
-           { submissionType: SubmissionType.q_4, deadline: `${currentTaxYear() + 1}-05-07` },                                                                                                                                                                                             
-         ]; 
-          await tx.insert(mtdSubmission).values(quarters.map((quarter) => {
+      if (props.regime === Regime.mtd) {
+        const quarters = [
+          { submissionType: SubmissionType.q_1, deadline: `${currentTaxYear()}-08-07` },
+          { submissionType: SubmissionType.q_2, deadline: `${currentTaxYear()}-11-07` },
+          { submissionType: SubmissionType.q_3, deadline: `${currentTaxYear() + 1}-02-07` },
+          { submissionType: SubmissionType.q_4, deadline: `${currentTaxYear() + 1}-05-07` },
+        ];
+        await tx.insert(mtdSubmission).values(
+          quarters.map((quarter) => {
             return {
-                practiceId: getCurrentPracticeId(),
-                taxReturnId: newTaxReturn.id,
-                submissionType: quarter.submissionType,
-                deadline: quarter.deadline,
-                status: Status.not_started,
-              };
-          }))
-        }
+              practiceId: getCurrentPracticeId(),
+              taxReturnId: newTaxReturn.id,
+              submissionType: quarter.submissionType,
+              deadline: quarter.deadline,
+              status: Status.not_started,
+            };
+          }),
+        );
+      }
 
       const checkList = props.regime === Regime.mtd ? mtdChecklist : sa100Checklist;
 
@@ -81,7 +82,12 @@ export default async function createClient(props: ClientActionsProps): Promise<C
     revalidatePath('/clients');
 
     return { success: true };
-  } catch {
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('createClient failed:', error.message);
+    } else {
+      console.error('createClient failed with non-Error', error);
+    }
     return { success: false, error: 'Failed to create client' };
   }
 }

@@ -37,7 +37,7 @@ export default function AddClientModal() {
       if (res.success) {
         handleClose();
       } else {
-        console.log(res.error);
+        console.error('Failed to submit', res.error);
       }
     });
   };

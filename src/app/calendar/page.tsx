@@ -55,7 +55,7 @@ export default async function Page() {
                   className="cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50"
                 >
                   <td className="py-3 pr-5">{entry.name}</td>
-                  <td className="py-3 pr-5">{entry.deadline.toDateString()}</td>
+                  <td className="py-3 pr-5">{entry.deadline.toLocaleDateString('en-GB')}</td>
                   <td className="py-3 pr-5">{entry.taxYearLabel}</td>
                   <td className="py-3 pr-5">
                     <StatusBadge status={entry.status} />
