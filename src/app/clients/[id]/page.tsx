@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import TaxReturnCard from './TaxReturnCard';
-import { getClientById } from '@/db/queries/clients';
+import { getClientById } from '@/db/clients';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;

@@ -1,8 +1,11 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import type * as schema from '../schema';
-import { Client, ClientBase, MTDTaxReturn, SA100TaxReturn } from '@/types/clients';
-import { db } from '../index';
+import type * as schema from './schema';
+import { type Client, type ClientBase, type MTDTaxReturn, type SA100TaxReturn, Regime, Status } from '@/types/clients';
+import { db } from './index';
+import { client, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { getCurrentPracticeId } from '@/lib/auth';
+import { currentTaxYear, sa100Deadline, mtdDeadlines } from '@/lib/deadlines';
+import { mtdChecklist, sa100Checklist } from '@/lib/checklistDefaults';
 
 type RawTaxReturn = InferSelectModel<typeof schema.taxReturn> & {
   mtdSubmissions: InferSelectModel<typeof schema.mtdSubmission>[];
@@ -94,4 +97,65 @@ export function getClientById(id: string): Promise<Client | null> {
       },
     })
     .then((cli) => (cli ? mapClient(cli) : null));
+}
+
+export interface CreateClientInput {
+  firstName: string;
+  lastName: string;
+  niNumber: string;
+  email: string;
+  phoneNumber?: string;
+  regime: Regime;
+}
+
+export async function insertClient(input: CreateClientInput): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [newClient] = await tx
+      .insert(client)
+      .values({
+        practiceId: getCurrentPracticeId(),
+        firstName: input.firstName,
+        lastName: input.lastName,
+        niNumber: input.niNumber,
+        email: input.email,
+        phoneNumber: input.phoneNumber,
+      })
+      .returning();
+
+    const [newTaxReturn] = await tx
+      .insert(taxReturn)
+      .values({
+        practiceId: getCurrentPracticeId(),
+        clientId: newClient.id,
+        taxYear: currentTaxYear(),
+        regime: input.regime,
+        status: Status.not_started,
+        deadline: sa100Deadline(currentTaxYear()),
+      })
+      .returning();
+
+    if (input.regime === Regime.mtd) {
+      await tx.insert(mtdSubmission).values(
+        mtdDeadlines(currentTaxYear()).map((quarter) => ({
+          practiceId: getCurrentPracticeId(),
+          taxReturnId: newTaxReturn.id,
+          submissionType: quarter.submissionType,
+          deadline: quarter.deadline,
+          status: Status.not_started,
+        })),
+      );
+    }
+
+    const checklist = input.regime === Regime.mtd ? mtdChecklist : sa100Checklist;
+
+    await tx.insert(checklistItem).values(
+      checklist.map((item) => ({
+        practiceId: getCurrentPracticeId(),
+        taxReturnId: newTaxReturn.id,
+        documentType: item.documentType,
+        label: item.label,
+        done: false,
+      })),
+    );
+  });
 }

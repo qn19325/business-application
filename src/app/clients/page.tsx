@@ -1,5 +1,5 @@
 import ClientListItem from './ClientListItem';
-import { getClients } from '@/db/queries/clients';
+import { getClients } from '@/db/clients';
 import AddClientModal from './AddClientModal';
 
 export default async function Page() {

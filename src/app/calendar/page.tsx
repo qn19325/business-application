@@ -2,7 +2,7 @@ import { getDeadlineEntries } from '@/lib/deadlines';
 import { DeadlineEntry } from '@/types/calendarModels';
 import { Fragment } from 'react';
 import StatusBadge from '@/components/StatusBadge';
-import { getClients } from '@/db/queries/clients';
+import { getClients } from '@/db/clients';
 
 export default async function Page() {
   const clients = await getClients();
