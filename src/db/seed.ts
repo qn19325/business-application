@@ -1,8 +1,16 @@
 import { db } from './index';
 import { client, practice, taxReturn, checklistItem, mtdSubmission } from './schema';
+import { eq } from 'drizzle-orm';
+
+const SEED_PRACTICE_NAME = 'Warwick & Co';
 
 async function main() {
-  const [insertedPractice] = await db.insert(practice).values({ name: 'Warwick & Co' }).returning();
+  await db.delete(practice).where(eq(practice.name, SEED_PRACTICE_NAME));
+
+  const [insertedPractice] = await db
+    .insert(practice)
+    .values({ name: SEED_PRACTICE_NAME })
+    .returning();
 
   const [insertedClientMtd] = await db
     .insert(client)

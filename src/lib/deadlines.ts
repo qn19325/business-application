@@ -9,6 +9,10 @@ const MTD_Q4_MMDD = '05-07';
 const TAX_YEAR_DEADLINE_MONTH_NUM = 3;
 const TAX_YEAR_DEADLINE_DAY_NUM = 5;
 
+export function formatDeadline(d: Date): string {
+  return d.toLocaleDateString('en-GB');
+}
+
 export function sa100Deadline(taxYear: number): string {
   return `${taxYear + 1}-${SA100_MMDD}`;
 }

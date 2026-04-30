@@ -1,28 +1,15 @@
 import { Client, Status } from '@/types/clients';
 import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
+import { nextUnfiledReturn, nextDeadline } from '@/lib/clients';
 
 interface ClientListItemProps {
   client: Client;
 }
 
 export default function ClientListItem(props: ClientListItemProps) {
-  const firstUnfiledReturn = props.client.taxReturns.find(
-    (taxReturn) => taxReturn.status !== Status.filed,
-  );
-
-  let nextDeadline = '';
-
-  if (firstUnfiledReturn) {
-    if (firstUnfiledReturn.type === 'sa100') {
-      nextDeadline = firstUnfiledReturn.deadline.toLocaleDateString('en-GB');
-    } else {
-      const firstUnfiledSubmission = firstUnfiledReturn.submissions.find(
-        (submission) => submission.status !== Status.filed,
-      );
-      nextDeadline = firstUnfiledSubmission?.deadline.toLocaleDateString() ?? '';
-    }
-  }
+  const firstUnfiledReturn = nextUnfiledReturn(props.client);
+  const deadline = firstUnfiledReturn ? nextDeadline(firstUnfiledReturn) : '';
 
   const status = firstUnfiledReturn ? firstUnfiledReturn.status : Status.filed;
   const regimeLabel =
@@ -40,7 +27,7 @@ export default function ClientListItem(props: ClientListItemProps) {
         </Link>
       </td>
       <td className="py-3 pr-5">{regimeLabel}</td>
-      <td className="py-3 pr-5">{nextDeadline}</td>
+      <td className="py-3 pr-5">{deadline}</td>
       <td className="py-3 pr-5">
         <StatusBadge status={status} />
       </td>
