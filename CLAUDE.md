@@ -3,7 +3,7 @@
 ## Current State
 
 **Active phase: B — Database Layer**
-**Next step: Phase B code review (pre-B7); schema hardening before Neon. See `wiki/topics/phase-b-code-review.md`.**
+**Next step: Phase B code review #2 (pre-B7). See `wiki/topics/phase-b-code-review-2.md`. Review #1 (`phase-b-code-review.md`) fully resolved.**
 **Deployed (Phase A):** https://business-application-dun.vercel.app
 
 ---

@@ -4,6 +4,7 @@ import { useActionState, useRef, useEffect } from 'react';
 import { useState } from 'react';
 import createClient from './actions';
 import Modal from '@/components/Modal';
+import { Regime } from '@/types/clients';
 
 const inputClass =
   'w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
@@ -58,11 +59,11 @@ function AddClientForm({ onSuccess }: { onSuccess: () => void }) {
             <label className={labelClass}>Regime</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input type="radio" name="regime" value="sa100" defaultChecked />
+                <input type="radio" name="regime" value={Regime.sa100} defaultChecked />
                 SA100
               </label>
               <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input type="radio" name="regime" value="mtd" />
+                <input type="radio" name="regime" value={Regime.mtd} />
                 MTD
               </label>
             </div>

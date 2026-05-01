@@ -34,7 +34,7 @@ function mapChecklist(items: InferSelectModel<typeof schema.checklistItem>[]): C
 }
 
 function mapTaxReturn(taxReturn: RawTaxReturn): MTDTaxReturn | SA100TaxReturn {
-  if (taxReturn.regime === 'mtd') {
+  if (taxReturn.regime === Regime.mtd) {
     return {
       type: 'mtd' as const,
       id: taxReturn.id,

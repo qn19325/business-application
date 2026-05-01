@@ -1,4 +1,4 @@
-import { Client, Status } from '@/types/clients';
+import { Client, Status, Regime } from '@/types/clients';
 import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
 import { nextUnfiledReturn, nextDeadline } from '@/lib/clients';
@@ -13,9 +13,9 @@ export default function ClientListItem(props: ClientListItemProps) {
 
   const status = firstUnfiledReturn ? firstUnfiledReturn.status : Status.filed;
   const regimeLabel =
-    firstUnfiledReturn?.type === 'mtd'
+    firstUnfiledReturn?.type === Regime.mtd
       ? 'MTD'
-      : firstUnfiledReturn?.type === 'sa100'
+      : firstUnfiledReturn?.type === Regime.sa100
         ? 'SA100'
         : '';
 

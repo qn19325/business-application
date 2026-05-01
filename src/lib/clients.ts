@@ -1,4 +1,4 @@
-import { Client, Status, MtdSubmissionStatus, SA100TaxReturn, MTDTaxReturn } from '@/types/clients';
+import { Client, Status, MtdSubmissionStatus, SA100TaxReturn, MTDTaxReturn, Regime } from '@/types/clients';
 import { formatDeadline } from './deadlines';
 
 export function nextUnfiledReturn(client: Client): SA100TaxReturn | MTDTaxReturn | null {
@@ -8,7 +8,7 @@ export function nextUnfiledReturn(client: Client): SA100TaxReturn | MTDTaxReturn
 }
 
 export function nextDeadline(taxReturn: SA100TaxReturn | MTDTaxReturn): string {
-  if (taxReturn.type === 'sa100') {
+  if (taxReturn.type === Regime.sa100) {
     return formatDeadline(taxReturn.deadline);
   } else {
     const unfiledSubmission = taxReturn.submissions.find(

@@ -1,6 +1,8 @@
 import { db } from './index';
 import { client, practice, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { eq } from 'drizzle-orm';
+import { Regime, Status, MtdSubmissionStatus, SubmissionType } from '@/types/clients';
+import { DocumentType } from '@/types/documents';
 
 const SEED_PRACTICE_NAME = 'Warwick & Co';
 
@@ -50,15 +52,15 @@ async function main() {
       practiceId: insertedPractice.id,
       clientId: insertedClientMtd.id,
       taxYear: 2025,
-      regime: 'mtd',
-      status: 'filed',
+      regime: Regime.mtd,
+      status: Status.filed,
     })
     .returning();
 
   await db.insert(checklistItem).values({
     practiceId: insertedPractice.id,
     taxReturnId: insertedTaxReturnMtd.id,
-    documentType: 'income',
+    documentType: DocumentType.income,
     label: 'Sales/income records for the quarter',
     done: true,
   });
@@ -66,7 +68,7 @@ async function main() {
   await db.insert(checklistItem).values({
     practiceId: insertedPractice.id,
     taxReturnId: insertedTaxReturnMtd.id,
-    documentType: 'bank_statements',
+    documentType: DocumentType.bank_statements,
     label: 'Bank statements for the quarter',
     done: true,
   });
@@ -77,15 +79,15 @@ async function main() {
       practiceId: insertedPractice.id,
       clientId: insertedClientSa100.id,
       taxYear: 2025,
-      regime: 'sa100',
-      status: 'filed',
+      regime: Regime.sa100,
+      status: Status.filed,
     })
     .returning();
 
   await db.insert(checklistItem).values({
     practiceId: insertedPractice.id,
     taxReturnId: insertedTaxReturnSa100.id,
-    documentType: 'p60',
+    documentType: DocumentType.p60,
     label: 'P60 (employment income)',
     done: true,
   });
@@ -93,7 +95,7 @@ async function main() {
   await db.insert(checklistItem).values({
     practiceId: insertedPractice.id,
     taxReturnId: insertedTaxReturnSa100.id,
-    documentType: 'bank_statements',
+    documentType: DocumentType.bank_statements,
     label: 'Bank statements',
     done: true,
   });
@@ -101,9 +103,9 @@ async function main() {
   await db.insert(mtdSubmission).values({
     practiceId: insertedPractice.id,
     taxReturnId: insertedTaxReturnMtd.id,
-    submissionType: 'q_1',
+    submissionType: SubmissionType.q_1,
     deadline: '2025-08-07',
-    status: 'submitted',
+    status: MtdSubmissionStatus.submitted,
   });
 }
 

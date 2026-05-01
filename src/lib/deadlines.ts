@@ -10,11 +10,11 @@ const TAX_YEAR_DEADLINE_MONTH_NUM = 3;
 const TAX_YEAR_DEADLINE_DAY_NUM = 5;
 
 export function computeDeadline(taxYear: number, _regime: Regime): Date {
-  return new Date(taxYear + 1, 0, 31);
+  return new Date(Date.UTC(taxYear + 1, 0, 31));
 }
 
 export function formatDeadline(d: Date): string {
-  return d.toLocaleDateString('en-GB');
+  return d.toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 export function sa100Deadline(taxYear: number): string {
@@ -36,7 +36,7 @@ export function getDeadlineEntries(clients: Client[]): DeadlineEntry[] {
   const deadlineEntries: DeadlineEntry[] = clients.flatMap((client) => {
     return (client.taxReturns as (SA100TaxReturn | MTDTaxReturn)[]).flatMap(
       (taxReturn): DeadlineEntry[] => {
-        if (taxReturn.type === 'mtd') {
+        if (taxReturn.type === Regime.mtd) {
           return taxReturn.submissions.map((submission) => ({
             name: `${client.firstName} ${client.lastName}`,
             id: submission.id,
