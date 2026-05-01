@@ -4,6 +4,7 @@ import {
   type Client,
   type ClientBase,
   type ChecklistItem,
+  type CreateClientInput,
   type MTDTaxReturn,
   type SA100TaxReturn,
   Regime,
@@ -13,7 +14,7 @@ import {
 import { db } from './index';
 import { client, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { getCurrentPracticeId } from '@/lib/auth';
-import { currentTaxYear, computeDeadline, mtdDeadlines } from '@/lib/deadlines';
+import { currentTaxYear, sa100Deadline, mtdDeadlines } from '@/lib/deadlines';
 import { getDefaultChecklist } from '@/lib/checklistDefaults';
 
 type RawTaxReturn = InferSelectModel<typeof schema.taxReturn> & {
@@ -54,7 +55,7 @@ function mapTaxReturn(taxReturn: RawTaxReturn): MTDTaxReturn | SA100TaxReturn {
       id: taxReturn.id,
       startTaxYear: taxReturn.taxYear,
       status: taxReturn.status,
-      deadline: computeDeadline(taxReturn.taxYear, Regime.sa100),
+      deadline: sa100Deadline(taxReturn.taxYear),
       checklist: mapChecklist(taxReturn.checklistItems),
     };
   }
@@ -66,7 +67,8 @@ function mapClient(cli: RawClient): Client {
     niNumber: cli.niNumber,
     firstName: cli.firstName,
     lastName: cli.lastName,
-    email: cli.email,
+    email: cli.email ?? undefined,
+    phoneNumber: cli.phoneNumber ?? undefined,
   };
 
   return {
@@ -75,10 +77,11 @@ function mapClient(cli: RawClient): Client {
   };
 }
 
-export function getClients(): Promise<Client[]> {
+export async function getClients(): Promise<Client[]> {
+  const practiceId = await getCurrentPracticeId();
   return db.query.client
     .findMany({
-      where: (table, { eq }) => eq(table.practiceId, getCurrentPracticeId()),
+      where: (table, { eq }) => eq(table.practiceId, practiceId),
       with: {
         taxReturns: {
           with: {
@@ -91,11 +94,12 @@ export function getClients(): Promise<Client[]> {
     .then((res) => res.map(mapClient));
 }
 
-export function getClientById(id: string): Promise<Client | null> {
+export async function getClientById(id: string): Promise<Client | null> {
+  const practiceId = await getCurrentPracticeId();
   return db.query.client
     .findFirst({
       where: (table, { eq, and }) =>
-        and(eq(table.id, id), eq(table.practiceId, getCurrentPracticeId())),
+        and(eq(table.id, id), eq(table.practiceId, practiceId)),
       with: {
         taxReturns: {
           with: {
@@ -108,21 +112,13 @@ export function getClientById(id: string): Promise<Client | null> {
     .then((cli) => (cli ? mapClient(cli) : null));
 }
 
-export interface CreateClientInput {
-  firstName: string;
-  lastName: string;
-  niNumber: string;
-  email: string;
-  phoneNumber?: string;
-  regime: Regime;
-}
-
 export async function insertClient(input: CreateClientInput): Promise<void> {
+  const practiceId = await getCurrentPracticeId();
   await db.transaction(async (tx) => {
     const [newClient] = await tx
       .insert(client)
       .values({
-        practiceId: getCurrentPracticeId(),
+        practiceId,
         firstName: input.firstName,
         lastName: input.lastName,
         niNumber: input.niNumber,
@@ -134,7 +130,7 @@ export async function insertClient(input: CreateClientInput): Promise<void> {
     const [newTaxReturn] = await tx
       .insert(taxReturn)
       .values({
-        practiceId: getCurrentPracticeId(),
+        practiceId,
         clientId: newClient.id,
         taxYear: currentTaxYear(),
         regime: input.regime,
@@ -145,7 +141,7 @@ export async function insertClient(input: CreateClientInput): Promise<void> {
     if (input.regime === Regime.mtd) {
       await tx.insert(mtdSubmission).values(
         mtdDeadlines(currentTaxYear()).map((quarter) => ({
-          practiceId: getCurrentPracticeId(),
+          practiceId,
           taxReturnId: newTaxReturn.id,
           submissionType: quarter.submissionType,
           deadline: quarter.deadline,
@@ -158,7 +154,7 @@ export async function insertClient(input: CreateClientInput): Promise<void> {
 
     await tx.insert(checklistItem).values(
       checklist.map((item) => ({
-        practiceId: getCurrentPracticeId(),
+        practiceId,
         taxReturnId: newTaxReturn.id,
         documentType: item.documentType,
         label: item.label,

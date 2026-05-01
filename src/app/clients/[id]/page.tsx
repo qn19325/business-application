@@ -16,7 +16,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         <div className="text-2xl font-semibold text-slate-900">
           {clientRecord.firstName} {clientRecord.lastName}
         </div>
-        <div className="font-mono text-sm text-slate-400">{clientRecord.niNumber}</div>
+        <div className="flex items-center gap-4 text-sm text-slate-400">
+          {clientRecord.phoneNumber && <span>{clientRecord.phoneNumber}</span>}
+          {clientRecord.email && <span>{clientRecord.email}</span>}
+          <span className="font-mono">{clientRecord.niNumber}</span>
+        </div>
       </div>
       <table className="w-full">
         <thead>

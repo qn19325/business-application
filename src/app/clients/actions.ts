@@ -1,7 +1,7 @@
 'use server';
 
-import { insertClient, type CreateClientInput } from '@/db/clients';
-import { Regime } from '@/types/clients';
+import { insertClient } from '@/db/clients';
+import { type CreateClientInput, Regime } from '@/types/clients';
 import { revalidatePath } from 'next/cache';
 
 export type CreateClientResult = { success: true } | { success: false; error: string };

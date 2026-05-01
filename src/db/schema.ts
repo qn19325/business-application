@@ -36,7 +36,7 @@ export const documentTypeEnum = pgEnum(
 export const practice = pgTable('practice', {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
-  clerkUserId: text(),
+  clerkUserId: text().unique(),
   createdAt: timestamp().notNull().defaultNow(),
   updatedAt: timestamp()
     .notNull()
@@ -54,7 +54,7 @@ export const client = pgTable(
     firstName: text().notNull(),
     lastName: text().notNull(),
     niNumber: text().notNull(),
-    email: text().notNull(),
+    email: text(),
     phoneNumber: text(),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
@@ -81,7 +81,6 @@ export const taxReturn = pgTable(
     taxYear: integer().notNull(),
     regime: regimeEnum().notNull(),
     status: statusEnum().notNull(),
-    deadlineOverride: date(),
     approvedAt: timestamp(),
     approvedBy: text(),
     createdAt: timestamp().notNull().defaultNow(),

@@ -3,8 +3,8 @@
 ## Current State
 
 **Active phase: B — Database Layer**
-**Next step: Phase B code review #2 (pre-B7). See `wiki/topics/phase-b-code-review-2.md`. Review #1 (`phase-b-code-review.md`) fully resolved.**
-**Deployed (Phase A):** https://business-application-dun.vercel.app
+**Next step: Phase B code review #2. See `wiki/topics/phase-b-code-review-2.md`. Review #1 (`phase-b-code-review.md`) fully resolved. Phase 2 Step 1 (Clerk, Neon, Vercel, Resend) deferred — see `wiki/decisions/deploy-sequencing.md`.**
+**Phase A shell deployed (no DB):** https://business-application-dun.vercel.app
 
 ---
 

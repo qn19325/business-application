@@ -1,8 +1,9 @@
 import { db } from './index';
 import { client, practice, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { eq } from 'drizzle-orm';
-import { Regime, Status, MtdSubmissionStatus, SubmissionType } from '@/types/clients';
-import { DocumentType } from '@/types/documents';
+import { Regime, Status, MtdSubmissionStatus } from '@/types/clients';
+import { currentTaxYear, mtdDeadlines } from '@/lib/deadlines';
+import { getDefaultChecklist } from '@/lib/checklistDefaults';
 
 const SEED_PRACTICE_NAME = 'Warwick & Co';
 
@@ -21,6 +22,8 @@ async function main() {
     .insert(practice)
     .values({ name: SEED_PRACTICE_NAME })
     .returning();
+
+  const taxYear = currentTaxYear();
 
   const [insertedClientMtd] = await db
     .insert(client)
@@ -51,62 +54,52 @@ async function main() {
     .values({
       practiceId: insertedPractice.id,
       clientId: insertedClientMtd.id,
-      taxYear: 2025,
+      taxYear,
       regime: Regime.mtd,
       status: Status.filed,
     })
     .returning();
 
-  await db.insert(checklistItem).values({
-    practiceId: insertedPractice.id,
-    taxReturnId: insertedTaxReturnMtd.id,
-    documentType: DocumentType.income,
-    label: 'Sales/income records for the quarter',
-    done: true,
-  });
-
-  await db.insert(checklistItem).values({
-    practiceId: insertedPractice.id,
-    taxReturnId: insertedTaxReturnMtd.id,
-    documentType: DocumentType.bank_statements,
-    label: 'Bank statements for the quarter',
-    done: true,
-  });
+  await db.insert(checklistItem).values(
+    getDefaultChecklist(Regime.mtd).map((item) => ({
+      practiceId: insertedPractice.id,
+      taxReturnId: insertedTaxReturnMtd.id,
+      documentType: item.documentType,
+      label: item.label,
+      done: true,
+    })),
+  );
 
   const [insertedTaxReturnSa100] = await db
     .insert(taxReturn)
     .values({
       practiceId: insertedPractice.id,
       clientId: insertedClientSa100.id,
-      taxYear: 2025,
+      taxYear,
       regime: Regime.sa100,
       status: Status.filed,
     })
     .returning();
 
-  await db.insert(checklistItem).values({
-    practiceId: insertedPractice.id,
-    taxReturnId: insertedTaxReturnSa100.id,
-    documentType: DocumentType.p60,
-    label: 'P60 (employment income)',
-    done: true,
-  });
+  await db.insert(checklistItem).values(
+    getDefaultChecklist(Regime.sa100).map((item) => ({
+      practiceId: insertedPractice.id,
+      taxReturnId: insertedTaxReturnSa100.id,
+      documentType: item.documentType,
+      label: item.label,
+      done: true,
+    })),
+  );
 
-  await db.insert(checklistItem).values({
-    practiceId: insertedPractice.id,
-    taxReturnId: insertedTaxReturnSa100.id,
-    documentType: DocumentType.bank_statements,
-    label: 'Bank statements',
-    done: true,
-  });
-
-  await db.insert(mtdSubmission).values({
-    practiceId: insertedPractice.id,
-    taxReturnId: insertedTaxReturnMtd.id,
-    submissionType: SubmissionType.q_1,
-    deadline: '2025-08-07',
-    status: MtdSubmissionStatus.submitted,
-  });
+  await db.insert(mtdSubmission).values(
+    mtdDeadlines(taxYear).map((quarter) => ({
+      practiceId: insertedPractice.id,
+      taxReturnId: insertedTaxReturnMtd.id,
+      submissionType: quarter.submissionType,
+      deadline: quarter.deadline,
+      status: MtdSubmissionStatus.submitted,
+    })),
+  );
 }
 
 main()

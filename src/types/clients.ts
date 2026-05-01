@@ -1,5 +1,3 @@
-// TODO: break apart into api models and internal models
-
 export const Status = {
   not_started: 'not_started',
   in_progress: 'in_progress',
@@ -37,7 +35,17 @@ export interface ClientBase {
   niNumber: string; // e.g. AB 12 34 56 C
   firstName: string;
   lastName: string;
+  email?: string;
+  phoneNumber?: string;
+}
+
+export interface CreateClientInput {
+  firstName: string;
+  lastName: string;
+  niNumber: string;
   email: string;
+  phoneNumber?: string;
+  regime: Regime;
 }
 
 export interface Client extends ClientBase {

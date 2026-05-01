@@ -1,9 +1,7 @@
-import type { InferInsertModel } from 'drizzle-orm';
-import type { checklistItem } from '@/db/schema';
 import { DocumentType } from '@/types/documents';
 import { Regime } from '@/types/clients';
 
-type ChecklistDefault = Pick<InferInsertModel<typeof checklistItem>, 'documentType' | 'label'>;
+type ChecklistDefault = { documentType: DocumentType; label: string };
 
 export const sa100Checklist: ChecklistDefault[] = [
   { documentType: DocumentType.p60, label: 'P60 (employment income)' },

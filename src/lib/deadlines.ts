@@ -1,7 +1,6 @@
 import { DeadlineEntry } from '@/types/calendarModels';
 import { Client, MTDTaxReturn, Regime, SA100TaxReturn, SubmissionType } from '@/types/clients';
 
-const SA100_MMDD = '01-31';
 const MTD_Q1_MMDD = '08-07';
 const MTD_Q2_MMDD = '11-07';
 const MTD_Q3_MMDD = '02-07';
@@ -9,16 +8,12 @@ const MTD_Q4_MMDD = '05-07';
 const TAX_YEAR_DEADLINE_MONTH_NUM = 3;
 const TAX_YEAR_DEADLINE_DAY_NUM = 5;
 
-export function computeDeadline(taxYear: number, _regime: Regime): Date {
+export function sa100Deadline(taxYear: number): Date {
   return new Date(Date.UTC(taxYear + 1, 0, 31));
 }
 
 export function formatDeadline(d: Date): string {
   return d.toLocaleDateString('en-GB', { timeZone: 'UTC' });
-}
-
-export function sa100Deadline(taxYear: number): string {
-  return `${taxYear + 1}-${SA100_MMDD}`;
 }
 
 export function mtdDeadlines(
