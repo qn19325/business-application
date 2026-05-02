@@ -1,5 +1,6 @@
 'use client';
 
+import ColorDot from '@/components/ColorDot';
 import StatusBadge from '@/components/StatusBadge';
 import { MTDTaxReturn, SA100TaxReturn } from '@/types/clients';
 import { useState } from 'react';
@@ -30,9 +31,7 @@ export default function TaxReturnCard(props: TaxReturnCardProps) {
           <td colSpan={4} className="pb-3">
             {props.checklist.map((item) => (
               <div key={item.id} className="flex items-center gap-2 py-1 text-sm text-slate-600">
-                <div
-                  className={`h-3 w-3 rounded-full ${item.done ? 'bg-green-500' : 'bg-red-500'}`}
-                ></div>
+                <ColorDot color={item.done ? 'bg-green-500' : 'bg-red-500'} />
                 <div>{item.text}</div>
               </div>
             ))}
