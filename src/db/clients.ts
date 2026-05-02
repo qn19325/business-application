@@ -17,20 +17,32 @@ import { currentTaxYear, sa100Deadline, mtdDeadlines } from '@/lib/deadlines';
 import { getDefaultChecklist } from '@/lib/checklistDefaults';
 import { CreateClientInput } from '@/schemas/clients';
 
+type RawChecklistItem = InferSelectModel<typeof schema.checklistItem> & {
+  document: InferSelectModel<typeof schema.document> | null;
+};
+
 type RawTaxReturn = InferSelectModel<typeof schema.taxReturn> & {
   mtdSubmissions: InferSelectModel<typeof schema.mtdSubmission>[];
-  checklistItems: InferSelectModel<typeof schema.checklistItem>[];
+  checklistItems: RawChecklistItem[];
 };
 
 type RawClient = InferSelectModel<typeof schema.client> & {
   taxReturns: RawTaxReturn[];
 };
 
-function mapChecklist(items: InferSelectModel<typeof schema.checklistItem>[]): ChecklistItem[] {
+function mapChecklist(items: RawChecklistItem[]): ChecklistItem[] {
   return items.map((item) => ({
     id: item.id,
     text: item.label,
     done: item.done,
+    document: item.document
+      ? {
+          id: item.document.id,
+          originalFileName: item.document.originalFileName,
+          mimeType: item.document.mimeType,
+          size: item.document.size,
+        }
+      : undefined,
   }));
 }
 
@@ -46,7 +58,8 @@ function mapTaxReturn(taxReturn: RawTaxReturn): MTDTaxReturn | SA100TaxReturn {
       status: taxReturn.status,
       submissions: taxReturn.mtdSubmissions.map((submission) => {
         const deadlineStr = deadlinesByType[submission.submissionType];
-        if (!deadlineStr) throw new Error(`No deadline for submission type: ${submission.submissionType}`);
+        if (!deadlineStr)
+          throw new Error(`No deadline for submission type: ${submission.submissionType}`);
         return {
           id: submission.id,
           submissionType: submission.submissionType,
@@ -93,7 +106,11 @@ export async function getClients(): Promise<Client[]> {
         taxReturns: {
           with: {
             mtdSubmissions: true,
-            checklistItems: true,
+            checklistItems: {
+              with: {
+                document: true,
+              },
+            },
           },
         },
       },
@@ -110,7 +127,11 @@ export async function getClientById(id: string): Promise<Client | null> {
         taxReturns: {
           with: {
             mtdSubmissions: true,
-            checklistItems: true,
+            checklistItems: {
+              with: {
+                document: true,
+              },
+            },
           },
         },
       },

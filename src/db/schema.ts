@@ -140,6 +140,29 @@ export const checklistItem = pgTable(
   (table) => [index('checklist_item_practice_id_idx').on(table.practiceId)],
 );
 
+export const document = pgTable(
+  'document',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    practiceId: uuid()
+      .notNull()
+      .references(() => practice.id, { onDelete: 'restrict' }),
+    checklistItemId: uuid()
+      .notNull()
+      .references(() => checklistItem.id, { onDelete: 'cascade' }),
+    r2Key: text().notNull(),
+    originalFileName: text().notNull(),
+    mimeType: text().notNull(),
+    size: integer().notNull(),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [unique().on(table.checklistItemId)],
+);
+
 export const practiceRelations = relations(practice, ({ many }) => ({
   clients: many(client),
 }));
@@ -168,5 +191,16 @@ export const checklistItemRelations = relations(checklistItem, ({ one }) => ({
   taxReturn: one(taxReturn, {
     fields: [checklistItem.taxReturnId],
     references: [taxReturn.id],
+  }),
+  document: one(document, {
+    fields: [checklistItem.id],
+    references: [document.id],
+  }),
+}));
+
+export const documentRelations = relations(document, ({ one }) => ({
+  checklistItem: one(checklistItem, {
+    fields: [document.checklistItemId],
+    references: [checklistItem.id],
   }),
 }));

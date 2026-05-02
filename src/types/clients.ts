@@ -71,4 +71,12 @@ export interface ChecklistItem {
   id: string;
   text: string;
   done: boolean;
+  document?: Document;
+}
+
+export interface Document {
+  id: string;
+  originalFileName: string;
+  mimeType: string;
+  size: number;
 }

@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Active phase: B — Database Layer**
-**Next step: Phase B code review #2. See `wiki/topics/phase-b-code-review-2.md`. Review #1 (`phase-b-code-review.md`) fully resolved. Phase 2 Step 1 (Clerk, Neon, Vercel, Resend) deferred — see `wiki/decisions/deploy-sequencing.md`.**
+**Active phase: C — File Storage**
+**Next step: C4 — install AWS SDK (`@aws-sdk/client-s3 @aws-sdk/s3-request-presigner`). C1–C3 complete (document table, domain type, query mapper).**
 **Phase A shell deployed (no DB):** https://business-application-dun.vercel.app
 
 ---
