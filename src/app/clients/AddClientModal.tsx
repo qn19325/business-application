@@ -21,7 +21,7 @@ function AddClientForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <>
-      {state && !state.success && (
+      {state && !state.success && !state.fieldErrors && (
         <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.error}
         </div>
@@ -32,10 +32,16 @@ function AddClientForm({ onSuccess }: { onSuccess: () => void }) {
             <div>
               <label className={labelClass}>First Name</label>
               <input type="text" name="firstName" className={inputClass} />
+              {state && !state.success && state.fieldErrors?.['firstName'] && (
+                <p className="mt-1 text-xs text-red-600">{state.fieldErrors['firstName']}</p>
+              )}
             </div>
             <div>
               <label className={labelClass}>Last Name</label>
               <input type="text" name="lastName" className={inputClass} />
+              {state && !state.success && state.fieldErrors?.['lastName'] && (
+                <p className="mt-1 text-xs text-red-600">{state.fieldErrors['lastName']}</p>
+              )}
             </div>
           </div>
           <div>
@@ -46,14 +52,23 @@ function AddClientForm({ onSuccess }: { onSuccess: () => void }) {
               placeholder="AB 12 34 56 C"
               className={`${inputClass} font-mono`}
             />
+            {state && !state.success && state.fieldErrors?.['niNumber'] && (
+              <p className="mt-1 text-xs text-red-600">{state.fieldErrors['niNumber']}</p>
+            )}
           </div>
           <div>
             <label className={labelClass}>Email</label>
             <input type="email" name="email" className={inputClass} />
+            {state && !state.success && state.fieldErrors?.['email'] && (
+              <p className="mt-1 text-xs text-red-600">{state.fieldErrors['email']}</p>
+            )}
           </div>
           <div>
             <label className={labelClass}>Phone</label>
             <input type="tel" name="phoneNumber" className={inputClass} />
+            {state && !state.success && state.fieldErrors?.['phoneNumber'] && (
+              <p className="mt-1 text-xs text-red-600">{state.fieldErrors['phoneNumber']}</p>
+            )}
           </div>
           <div>
             <label className={labelClass}>Regime</label>
@@ -67,6 +82,9 @@ function AddClientForm({ onSuccess }: { onSuccess: () => void }) {
                 MTD
               </label>
             </div>
+            {state && !state.success && state.fieldErrors?.['regime'] && (
+              <p className="mt-1 text-xs text-red-600">{state.fieldErrors['regime']}</p>
+            )}
           </div>
         </fieldset>
 

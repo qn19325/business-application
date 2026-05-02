@@ -39,15 +39,6 @@ export interface ClientBase {
   phoneNumber?: string;
 }
 
-export interface CreateClientInput {
-  firstName: string;
-  lastName: string;
-  niNumber: string;
-  email: string;
-  phoneNumber?: string;
-  regime: Regime;
-}
-
 export interface Client extends ClientBase {
   taxReturns: (SA100TaxReturn | MTDTaxReturn)[];
 }

@@ -4,7 +4,6 @@ import {
   type Client,
   type ClientBase,
   type ChecklistItem,
-  type CreateClientInput,
   type MTDTaxReturn,
   type SA100TaxReturn,
   Regime,
@@ -16,6 +15,7 @@ import { client, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { getCurrentPracticeId } from '@/lib/auth';
 import { currentTaxYear, sa100Deadline, mtdDeadlines } from '@/lib/deadlines';
 import { getDefaultChecklist } from '@/lib/checklistDefaults';
+import { CreateClientInput } from '@/schemas/clients';
 
 type RawTaxReturn = InferSelectModel<typeof schema.taxReturn> & {
   mtdSubmissions: InferSelectModel<typeof schema.mtdSubmission>[];
@@ -98,8 +98,7 @@ export async function getClientById(id: string): Promise<Client | null> {
   const practiceId = await getCurrentPracticeId();
   return db.query.client
     .findFirst({
-      where: (table, { eq, and }) =>
-        and(eq(table.id, id), eq(table.practiceId, practiceId)),
+      where: (table, { eq, and }) => and(eq(table.id, id), eq(table.practiceId, practiceId)),
       with: {
         taxReturns: {
           with: {

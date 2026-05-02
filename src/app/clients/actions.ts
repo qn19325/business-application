@@ -1,34 +1,43 @@
 'use server';
 
 import { insertClient } from '@/db/clients';
-import { type CreateClientInput, Regime } from '@/types/clients';
 import { revalidatePath } from 'next/cache';
+import { clientInputSchema } from '@/schemas/clients';
+import { ArkErrors } from 'arktype';
 
-export type CreateClientResult = { success: true } | { success: false; error: string };
+export type CreateClientResult =
+  | { success: true }
+  | { success: false; error: string; fieldErrors?: Record<string, string> };
 
 export default async function createClient(
   _prevState: CreateClientResult | null,
   formData: FormData,
 ): Promise<CreateClientResult> {
-  const input: CreateClientInput = {
-    firstName: formData.get('firstName') as string,
-    lastName: formData.get('lastName') as string,
-    niNumber: formData.get('niNumber') as string,
-    email: formData.get('email') as string,
-    phoneNumber: (formData.get('phoneNumber') as string) || undefined,
-    regime: formData.get('regime') as Regime,
+  const input = {
+    firstName: formData.get('firstName'),
+    lastName: formData.get('lastName'),
+    niNumber: formData.get('niNumber'),
+    email: formData.get('email'),
+    phoneNumber: formData.get('phoneNumber'),
+    regime: formData.get('regime'),
   };
 
+  const parsed = clientInputSchema(input);
+  if (parsed instanceof ArkErrors) {
+    const fieldErrors = Object.fromEntries(parsed.map((err) => [err.path.join('.'), err.message]));
+    return { success: false, error: 'Validation failed', fieldErrors };
+  }
+
   try {
-    await insertClient(input);
+    await insertClient(parsed);
     revalidatePath('/clients');
     return { success: true };
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('createClient failed:', error.message);
-    } else {
-      console.error('createClient failed with non-Error', error);
+    if (error instanceof Error && 'code' in error && error.code === '23505') {
+      return { success: false, error: 'A client with this NI number already exists' };
     }
+    console.error('createClient failed:', error);
+
     return { success: false, error: 'Failed to create client' };
   }
 }
