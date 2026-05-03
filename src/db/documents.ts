@@ -2,7 +2,7 @@ import { db } from './index';
 import { document } from './schema';
 import { eq } from 'drizzle-orm';
 
-interface InsertDocumentInput {
+export interface InsertDocumentInput {
   practiceId: string;
   checklistItemId: string;
   r2Key: string;
@@ -25,4 +25,16 @@ export async function insertDocument(input: InsertDocumentInput): Promise<void> 
 export async function deleteDocument(documentId: string) {
   const [deleted] = await db.delete(document).where(eq(document.id, documentId)).returning();
   return deleted;
+}
+
+export async function getDocumentByChecklistItemId(checklistItemId: string) {
+  return await db.query.document.findFirst({
+    where: (table, { eq }) => eq(table.checklistItemId, checklistItemId),
+  });
+}
+
+export async function getDocument(documentId: string) {
+  return await db.query.document.findFirst({
+    where: (table, { eq }) => eq(table.id, documentId),
+  });
 }

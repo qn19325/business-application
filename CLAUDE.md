@@ -3,7 +3,7 @@
 ## Current State
 
 **Active phase: C — File Storage**
-**Next step: C4 — install AWS SDK (`@aws-sdk/client-s3 @aws-sdk/s3-request-presigner`). C1–C3 complete (document table, domain type, query mapper).**
+**Next step: C8 — checklist UI (upload button, spinner, filename/download link). C1–C7 complete.**
 **Phase A shell deployed (no DB):** https://business-application-dun.vercel.app
 
 ---

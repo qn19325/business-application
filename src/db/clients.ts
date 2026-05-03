@@ -1,4 +1,4 @@
-import type { InferSelectModel } from 'drizzle-orm';
+import { eq, type InferSelectModel } from 'drizzle-orm';
 import type * as schema from './schema';
 import {
   type Client,
@@ -188,4 +188,8 @@ export async function insertClient(input: CreateClientInput): Promise<void> {
       })),
     );
   });
+}
+
+export async function markChecklistItemDone(id: string): Promise<void> {
+  await db.update(checklistItem).set({ done: true }).where(eq(checklistItem.id, id));
 }

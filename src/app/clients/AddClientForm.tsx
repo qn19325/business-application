@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
-import createClient from './actions';
+import { createClient } from './actions';
 import { Regime } from '@/types/clients';
 
 const inputClass =
