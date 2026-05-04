@@ -1,13 +1,11 @@
 import { getChecklistItem } from '@/db/clients';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { r2 } from '@/lib/r2';
 import { randomUUID } from 'crypto';
 import { db } from '@/db';
 import { checklistItem, document, r2PendingDelete } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { deletePendingDelete, getPendingDeletes } from '@/db/documents';
 import { ALLOWED_TYPES, MAX_FILE_SIZE } from './documents';
+import { deleteObject, getUploadUrl } from './r2';
 
 interface UploadMetaData {
   mimeType: string;
@@ -39,13 +37,7 @@ export async function prepareUpload(
   }
 
   const documentKey = randomUUID();
-  const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
-    Key: documentKey,
-    ContentType: fileMetaData.mimeType,
-    ContentLength: fileMetaData.size,
-  });
-  const uploadUrl = await getSignedUrl(r2, command, { expiresIn: 900 });
+  const uploadUrl = await getUploadUrl(documentKey, fileMetaData.mimeType, fileMetaData.size);
   return { uploadUrl, documentKey };
 }
 
@@ -87,9 +79,7 @@ export async function completeUpload(
 
   if (res.oldR2Key) {
     try {
-      await r2.send(
-        new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: res.oldR2Key }),
-      );
+      await deleteObject(res.oldR2Key);
       await deletePendingDelete(res.oldR2Key);
     } catch (e) {
       console.error('Immediate R2 delete failed — will be retried by cleanup job:', e);
@@ -101,9 +91,7 @@ export async function drainPendingDeletes() {
   const pending = await getPendingDeletes();
   const results = await Promise.allSettled(
     pending.map(async (entry) => {
-      await r2.send(
-        new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: entry.r2Key }),
-      );
+      await deleteObject(entry.r2Key);
       await deletePendingDelete(entry.r2Key);
       return entry.r2Key;
     }),
@@ -119,13 +107,4 @@ export async function drainPendingDeletes() {
   }
 
   return { processed: results.length, succeeded, failed };
-}
-
-export async function getDownloadUrl(r2Key: string) {
-  const getCommand = new GetObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME,
-    Key: r2Key,
-  });
-
-  return await getSignedUrl(r2, getCommand, { expiresIn: 3600 });
 }

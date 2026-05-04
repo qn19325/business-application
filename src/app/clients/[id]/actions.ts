@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { getCurrentPracticeId } from '@/lib/auth';
 import { getDocument } from '@/db/documents';
-import { completeUpload, getDownloadUrl, prepareUpload } from '@/lib/document-lifecycle';
+import { completeUpload, prepareUpload } from '@/lib/document-lifecycle';
+import { getDownloadUrl } from '@/lib/r2';
 
 export async function getUploadUrl(checklistItemId: string, mimeType: string, size: number) {
   const practiceId = await getCurrentPracticeId();
