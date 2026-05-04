@@ -7,7 +7,7 @@ import { useRef, useState } from 'react';
 import { formatDeadline } from '@/lib/deadlines';
 import { nextDeadline } from '@/lib/clients';
 import { useDocumentUpload } from './useDocumentUpload';
-import { getDownloadUrl } from './actions';
+import { getDocumentDownloadUrl } from './actions';
 import { ALLOWED_TYPES, MAX_FILE_SIZE } from '@/lib/documents';
 
 export type TaxReturnCardProps = SA100TaxReturn | MTDTaxReturn;
@@ -44,14 +44,16 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
         }}
         accept={ALLOWED_TYPES.join(',')}
       />
-      <button type="button" onClick={() => inputRef.current?.click()} disabled={isUploading}>Upload</button>
+      <button type="button" onClick={() => inputRef.current?.click()} disabled={isUploading}>
+        Upload
+      </button>
       {item.document && (
         <a
           href="#"
           onClick={async (e) => {
             if (!item.document) return;
             e.preventDefault();
-            const url = await getDownloadUrl(item.document.id);
+            const url = await getDocumentDownloadUrl(item.document.id);
             window.open(url, '_blank');
           }}
         >

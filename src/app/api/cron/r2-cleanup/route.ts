@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { r2 } from '@/lib/r2';
-import { deletePendingDelete, getPendingDeletes } from '@/db/documents';
+import { drainPendingDeletes } from '@/lib/document-lifecycle';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
@@ -9,23 +7,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const pending = await getPendingDeletes();
-  const results = await Promise.allSettled(
-    pending.map(async (entry) => {
-      await r2.send(new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: entry.r2Key }));
-      await deletePendingDelete(entry.r2Key);
-      return entry.r2Key;
-    }),
-  );
+  const res = await drainPendingDeletes();
 
-  const succeeded = results.filter((r) => r.status === 'fulfilled').length;
-  const failed = results.filter((r) => r.status === 'rejected').length;
-
-  if (failed > 0) {
-    results.forEach((r) => {
-      if (r.status === 'rejected') console.error('R2 cleanup failed:', r.reason);
-    });
-  }
-
-  return NextResponse.json({ processed: pending.length, succeeded, failed });
+  return NextResponse.json({ ...res });
 }

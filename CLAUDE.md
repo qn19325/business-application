@@ -4,6 +4,7 @@
 
 **Active phase: D — AI Preparation Layer**
 **Phase C complete. Document storage live — upload, download, replace flow, client-side + server-side validation all working.**
+**Next step: implement document lifecycle module refactor before Phase D work begins. Design brief in `wiki/topics/architecture-improvement-candidates.md`.**
 **Phase A shell deployed (no DB):** https://business-application-dun.vercel.app
 
 ---
