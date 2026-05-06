@@ -1,4 +1,4 @@
-import { and, eq, type InferSelectModel } from 'drizzle-orm';
+import { type InferSelectModel } from 'drizzle-orm';
 import type * as schema from './schema';
 import {
   type Client,
@@ -13,7 +13,12 @@ import {
 import { db } from './index';
 import { client, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { getCurrentPracticeId } from '@/lib/auth';
-import { currentTaxYear, sa100Deadline, mtdDeadlines } from '@/lib/deadlines';
+import {
+  currentTaxYear,
+  sa100Deadline,
+  mtdDeadlines,
+  mtdSubmissionDeadlines,
+} from '@/lib/deadlines';
 import { getDefaultChecklist } from '@/lib/checklistDefaults';
 import { CreateClientInput } from '@/schemas/clients';
 
@@ -46,37 +51,36 @@ function mapChecklist(items: RawChecklistItem[]): ChecklistItem[] {
   }));
 }
 
-function mapTaxReturn(taxReturn: RawTaxReturn): MTDTaxReturn | SA100TaxReturn {
-  if (taxReturn.regime === Regime.mtd) {
-    const deadlinesByType = Object.fromEntries(
-      mtdDeadlines(taxReturn.taxYear).map((d) => [d.submissionType, d.deadline]),
-    );
+function mapTaxReturn(rawReturn: RawTaxReturn): MTDTaxReturn | SA100TaxReturn {
+  if (rawReturn.regime === Regime.mtd) {
+    const deadlines = mtdSubmissionDeadlines(rawReturn.taxYear);
     return {
-      type: 'mtd' as const,
-      id: taxReturn.id,
-      taxYear: taxReturn.taxYear,
-      status: taxReturn.status,
-      submissions: taxReturn.mtdSubmissions.map((submission) => {
-        const deadlineStr = deadlinesByType[submission.submissionType];
-        if (!deadlineStr)
-          throw new Error(`No deadline for submission type: ${submission.submissionType}`);
+      type: Regime.mtd,
+      id: rawReturn.id,
+      taxYear: rawReturn.taxYear,
+      status: rawReturn.status,
+      submissions: rawReturn.mtdSubmissions.map((submission) => {
+        const deadline = deadlines.find((val) => val.submissionType === submission.submissionType);
+        if (!deadline) {
+          throw new Error('Error finding deadline');
+        }
         return {
           id: submission.id,
           submissionType: submission.submissionType,
-          deadline: new Date(deadlineStr),
+          deadline: deadline.deadline,
           status: submission.status,
         };
       }),
-      checklist: mapChecklist(taxReturn.checklistItems),
+      checklist: mapChecklist(rawReturn.checklistItems),
     };
   } else {
     return {
-      type: 'sa100' as const,
-      id: taxReturn.id,
-      taxYear: taxReturn.taxYear,
-      status: taxReturn.status,
-      deadline: sa100Deadline(taxReturn.taxYear),
-      checklist: mapChecklist(taxReturn.checklistItems),
+      type: Regime.sa100,
+      id: rawReturn.id,
+      taxYear: rawReturn.taxYear,
+      status: rawReturn.status,
+      deadline: sa100Deadline(rawReturn.taxYear),
+      checklist: mapChecklist(rawReturn.checklistItems),
     };
   }
 }
@@ -104,6 +108,7 @@ export async function getClients(): Promise<Client[]> {
       where: (table, { eq }) => eq(table.practiceId, practiceId),
       with: {
         taxReturns: {
+          orderBy: (table, { desc }) => desc(table.taxYear),
           with: {
             mtdSubmissions: true,
             checklistItems: {
@@ -125,6 +130,7 @@ export async function getClientById(id: string): Promise<Client | null> {
       where: (table, { eq, and }) => and(eq(table.id, id), eq(table.practiceId, practiceId)),
       with: {
         taxReturns: {
+          orderBy: (table, { desc }) => desc(table.taxYear),
           with: {
             mtdSubmissions: true,
             checklistItems: {
@@ -190,18 +196,12 @@ export async function insertClient(input: CreateClientInput): Promise<void> {
   });
 }
 
-export async function markChecklistItemDone(id: string, practiceId: string): Promise<void> {
-  await db
-    .update(checklistItem)
-    .set({ done: true })
-    .where(and(eq(checklistItem.id, id), eq(checklistItem.practiceId, practiceId)));
-}
-
 export async function getChecklistItem(
   id: string,
-  practiceId: string,
-): Promise<InferSelectModel<typeof schema.checklistItem> | undefined> {
-  return await db.query.checklistItem.findFirst({
+): Promise<{ id: string; practiceId: string } | undefined> {
+  const practiceId = await getCurrentPracticeId();
+  const item = await db.query.checklistItem.findFirst({
     where: (table, { eq, and }) => and(eq(table.id, id), eq(table.practiceId, practiceId)),
   });
+  return item ? { id: item.id, practiceId } : undefined;
 }

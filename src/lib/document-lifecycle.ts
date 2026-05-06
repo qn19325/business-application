@@ -20,12 +20,8 @@ interface DocumentMetaData {
 
 // Abandoned presigned URLs (browser crash after prepareUpload, before completeUpload)
 // leave orphaned R2 objects. Accepted for Phase 1 — single user, cosmetic cost.
-export async function prepareUpload(
-  checklistItemId: string,
-  practiceId: string,
-  fileMetaData: UploadMetaData,
-) {
-  const item = await getChecklistItem(checklistItemId, practiceId);
+export async function prepareUpload(checklistItemId: string, fileMetaData: UploadMetaData) {
+  const item = await getChecklistItem(checklistItemId);
   if (!item) throw new Error('Unauthorised');
 
   if (!ALLOWED_TYPES.includes(fileMetaData.mimeType as (typeof ALLOWED_TYPES)[number])) {
@@ -43,11 +39,10 @@ export async function prepareUpload(
 
 export async function completeUpload(
   checklistItemId: string,
-  practiceId: string,
   documentKey: string,
   fileMetaData: DocumentMetaData,
 ): Promise<void> {
-  const item = await getChecklistItem(checklistItemId, practiceId);
+  const item = await getChecklistItem(checklistItemId);
   if (!item) throw new Error('Unauthorised');
 
   const res = await db.transaction(async (tx) => {
@@ -57,11 +52,13 @@ export async function completeUpload(
 
     if (existing) {
       await tx.delete(document).where(eq(document.id, existing.id));
-      await tx.insert(r2PendingDelete).values({ practiceId: practiceId, r2Key: existing.r2Key });
+      await tx
+        .insert(r2PendingDelete)
+        .values({ practiceId: item.practiceId, r2Key: existing.r2Key });
     }
 
     await tx.insert(document).values({
-      practiceId,
+      practiceId: item.practiceId,
       checklistItemId,
       r2Key: documentKey,
       originalFileName: fileMetaData.originalFileName,
@@ -72,7 +69,9 @@ export async function completeUpload(
     await tx
       .update(checklistItem)
       .set({ done: true })
-      .where(and(eq(checklistItem.id, checklistItemId), eq(checklistItem.practiceId, practiceId)));
+      .where(
+        and(eq(checklistItem.id, checklistItemId), eq(checklistItem.practiceId, item.practiceId)),
+      );
 
     return { oldR2Key: existing?.r2Key ?? null };
   });

@@ -1,13 +1,16 @@
+import { getCurrentPracticeId } from '@/lib/auth';
 import { db } from './index';
-import { document, r2PendingDelete } from './schema';
+import { r2PendingDelete } from './schema';
 import { eq } from 'drizzle-orm';
 
-export async function getDocument(
-  documentId: string,
-): Promise<typeof document.$inferSelect | undefined> {
-  return await db.query.document.findFirst({
-    where: (table, { eq }) => eq(table.id, documentId),
+type DocumentRow = { id: string; r2Key: string };
+
+export async function getDocument(documentId: string): Promise<DocumentRow | undefined> {
+  const practiceId = await getCurrentPracticeId();
+  const row = await db.query.document.findFirst({
+    where: (table, { eq, and }) => and(eq(table.practiceId, practiceId), eq(table.id, documentId)),
   });
+  return row ? { id: row.id, r2Key: row.r2Key } : undefined;
 }
 
 // No practiceId filter — this is a global cron operation that processes all practices.

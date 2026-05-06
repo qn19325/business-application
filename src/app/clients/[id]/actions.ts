@@ -1,14 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getCurrentPracticeId } from '@/lib/auth';
 import { getDocument } from '@/db/documents';
 import { completeUpload, prepareUpload } from '@/lib/document-lifecycle';
 import { getDownloadUrl } from '@/lib/r2';
 
 export async function getUploadUrl(checklistItemId: string, mimeType: string, size: number) {
-  const practiceId = await getCurrentPracticeId();
-  return await prepareUpload(checklistItemId, practiceId, { mimeType, size });
+  return await prepareUpload(checklistItemId, { mimeType, size });
 }
 
 export async function recordUpload(
@@ -18,9 +16,7 @@ export async function recordUpload(
   mimeType: string,
   size: number,
 ) {
-  const practiceId = await getCurrentPracticeId();
-
-  await completeUpload(checklistItemId, practiceId, documentKey, {
+  await completeUpload(checklistItemId, documentKey, {
     mimeType,
     size,
     originalFileName,
@@ -29,16 +25,11 @@ export async function recordUpload(
   revalidatePath('/clients', 'layout');
 }
 
-export async function getDocumentDownloadUrl(documentId: string) {
+export async function getDocumentDownloadUrl(documentId: string): Promise<string> {
   const document = await getDocument(documentId);
-  const practiceId = await getCurrentPracticeId();
 
   if (!document) {
     throw new Error('Document not found');
-  }
-
-  if (document.practiceId !== practiceId) {
-    throw new Error('Unauthorised');
   }
 
   return getDownloadUrl(document.r2Key);

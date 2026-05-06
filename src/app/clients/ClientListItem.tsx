@@ -1,8 +1,8 @@
 import { Client, Status, Regime } from '@/types/clients';
 import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
-import { nextUnfiledReturn, nextDeadline } from '@/lib/clients';
-import { formatDeadline } from '@/lib/deadlines';
+import { nextUnfiledReturn } from '@/lib/clients';
+import { formatDeadline, nextDeadline } from '@/lib/deadlines';
 
 interface ClientListItemProps {
   client: Client;

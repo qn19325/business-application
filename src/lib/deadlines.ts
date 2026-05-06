@@ -1,12 +1,31 @@
 import { DeadlineEntry } from '@/types/calendarModels';
-import { Client, Regime, SubmissionType } from '@/types/clients';
+import {
+  Client,
+  Status,
+  MtdSubmissionStatus,
+  SA100TaxReturn,
+  MTDTaxReturn,
+  Regime,
+  SubmissionType,
+} from '@/types/clients';
 
 const MTD_Q1_MMDD = '08-07';
 const MTD_Q2_MMDD = '11-07';
 const MTD_Q3_MMDD = '02-07';
 const MTD_Q4_MMDD = '05-07';
-const TAX_YEAR_DEADLINE_MONTH_NUM = 3;
+const TAX_YEAR_DEADLINE_MONTH_NUM = 4;
 const TAX_YEAR_DEADLINE_DAY_NUM = 5;
+
+export function nextDeadline(taxReturn: SA100TaxReturn | MTDTaxReturn): Date | null {
+  if (taxReturn.type === Regime.sa100) {
+    return taxReturn.status !== Status.filed ? taxReturn.deadline : null;
+  } else {
+    const unfiledSubmission = taxReturn.submissions.find(
+      (submission) => submission.status !== MtdSubmissionStatus.submitted,
+    );
+    return unfiledSubmission?.deadline ?? null;
+  }
+}
 
 export function sa100Deadline(taxYear: number): Date {
   return new Date(Date.UTC(taxYear + 1, 0, 31));
@@ -14,6 +33,14 @@ export function sa100Deadline(taxYear: number): Date {
 
 export function formatDeadline(d: Date): string {
   return d.toLocaleDateString('en-GB', { timeZone: 'UTC' });
+}
+
+export function mtdSubmissionDeadlines(
+  taxYear: number,
+): { submissionType: SubmissionType; deadline: Date }[] {
+  return mtdDeadlines(taxYear).map((deadline) => {
+    return { submissionType: deadline.submissionType, deadline: new Date(deadline.deadline) };
+  });
 }
 
 export function mtdDeadlines(
@@ -58,13 +85,22 @@ export function getDeadlineEntries(clients: Client[]): DeadlineEntry[] {
 }
 
 export function currentTaxYear(today: Date = new Date()): number {
-  if (
-    today.getMonth() < TAX_YEAR_DEADLINE_MONTH_NUM ||
-    (today.getMonth() === TAX_YEAR_DEADLINE_MONTH_NUM &&
-      today.getDate() <= TAX_YEAR_DEADLINE_DAY_NUM)
-  ) {
-    return today.getFullYear() - 1;
-  }
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(today);
 
-  return today.getFullYear();
+  const year = Number(parts.find((p) => p.type === 'year')!.value);
+  const month = Number(parts.find((p) => p.type === 'month')!.value);
+  const day = Number(parts.find((p) => p.type === 'day')!.value);
+
+  if (
+    month < TAX_YEAR_DEADLINE_MONTH_NUM ||
+    (month === TAX_YEAR_DEADLINE_MONTH_NUM && day <= TAX_YEAR_DEADLINE_DAY_NUM)
+  ) {
+    return year - 1;
+  }
+  return year;
 }

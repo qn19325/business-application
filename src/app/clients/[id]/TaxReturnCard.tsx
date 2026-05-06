@@ -4,8 +4,7 @@ import ColorDot from '@/components/ColorDot';
 import StatusBadge from '@/components/StatusBadge';
 import { ChecklistItem, MTDTaxReturn, SA100TaxReturn } from '@/types/clients';
 import { useRef, useState } from 'react';
-import { formatDeadline } from '@/lib/deadlines';
-import { nextDeadline } from '@/lib/clients';
+import { formatDeadline, nextDeadline } from '@/lib/deadlines';
 import { useDocumentUpload } from './useDocumentUpload';
 import { getDocumentDownloadUrl } from './actions';
 import { ALLOWED_TYPES, MAX_FILE_SIZE } from '@/lib/documents';
@@ -48,17 +47,16 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
         Upload
       </button>
       {item.document && (
-        <a
-          href="#"
-          onClick={async (e) => {
+        <button
+          type="button"
+          onClick={async () => {
             if (!item.document) return;
-            e.preventDefault();
             const url = await getDocumentDownloadUrl(item.document.id);
             window.open(url, '_blank');
           }}
         >
           {item.document.originalFileName}
-        </a>
+        </button>
       )}
       {isUploading && <span>Uploading...</span>}
       {uploadError && <span className="text-red-500">{uploadError}</span>}
