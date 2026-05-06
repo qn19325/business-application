@@ -1,7 +1,6 @@
 import { Client, Status, Regime } from '@/types/clients';
 import StatusBadge from '@/components/StatusBadge';
 import Link from 'next/link';
-import { nextUnfiledReturn } from '@/lib/clients';
 import { formatDeadline, nextDeadline } from '@/lib/deadlines';
 
 interface ClientListItemProps {
@@ -9,11 +8,11 @@ interface ClientListItemProps {
 }
 
 export default function ClientListItem(props: ClientListItemProps) {
-  const firstUnfiledReturn = nextUnfiledReturn(props.client);
+  const firstUnfiledReturn = props.client.taxReturns.find(
+    (taxReturn) => taxReturn.status !== Status.filed,
+  );
   const deadlineDate = firstUnfiledReturn ? nextDeadline(firstUnfiledReturn) : null;
-
   const status = firstUnfiledReturn ? firstUnfiledReturn.status : Status.filed;
-
   const mostRecentReturn = props.client.taxReturns.at(-1);
   const regimeLabel =
     mostRecentReturn?.type === Regime.mtd

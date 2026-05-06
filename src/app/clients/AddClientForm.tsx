@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from 'react';
 import { createClient } from './actions';
 import { Regime } from '@/types/clients';
+import { NI_NUMBER_PATTERN } from '@/schemas/clients';
 
 const inputClass =
   'w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500';
@@ -48,7 +49,7 @@ export default function AddClientForm({ onSuccess }: { onSuccess: () => void }) 
               name="niNumber"
               required
               placeholder="AB 12 34 56 C"
-              pattern="[A-Za-z]{2}[\s]?[0-9]{2}[\s]?[0-9]{2}[\s]?[0-9]{2}[\s]?[A-Da-d]"
+              pattern={NI_NUMBER_PATTERN}
               title="National Insurance number, e.g. AB 12 34 56 C"
               className={`${inputClass} font-mono`}
             />

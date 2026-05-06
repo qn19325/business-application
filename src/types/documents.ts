@@ -1,3 +1,19 @@
+export interface Document {
+  id: string;
+  originalFileName: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface FileMetaData {
+  mimeType: string;
+  size: number;
+}
+
+export interface DocumentMetaData extends FileMetaData {
+  originalFileName: string;
+}
+
 export const DocumentType = {
   p60: 'p60',
   p11d: 'p11d',

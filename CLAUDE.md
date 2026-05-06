@@ -4,7 +4,9 @@
 
 **Active phase: D — AI Preparation Layer**
 **Phase C complete. Document storage live — upload, download, replace flow, client-side + server-side validation all working.**
-**All 4 architecture improvement candidates complete. Lifecycle module, Storage module, Deadline Computation module, Document Validation consolidation — all done. See `wiki/topics/architecture-improvement-candidates.md`.**
+**All 4 Phase C architecture improvement candidates complete. Lifecycle module, Storage module, Deadline Computation module, Document Validation consolidation — all done.**
+**All 3 Phase D architecture candidates complete. NI regex constants exported, `lib/clients.ts` deleted, document types consolidated into `types/documents.ts`.**
+**Next: Phase D feature work. See `wiki/topics/application-build-phases.md`.**
 **Phase A shell deployed (no DB):** https://business-application-dun.vercel.app
 
 ---

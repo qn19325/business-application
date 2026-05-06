@@ -1,3 +1,5 @@
+import { Document } from './documents';
+
 export const Status = {
   not_started: 'not_started',
   in_progress: 'in_progress',
@@ -72,11 +74,4 @@ export interface ChecklistItem {
   text: string;
   done: boolean;
   document?: Document;
-}
-
-export interface Document {
-  id: string;
-  originalFileName: string;
-  mimeType: string;
-  size: number;
 }

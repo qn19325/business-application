@@ -5,7 +5,8 @@ import { checklistItem, document, r2PendingDelete } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { deletePendingDelete, getPendingDeletes } from '@/db/documents';
 import { deleteObject, getUploadUrl } from './r2';
-import { DocumentMetaData, FileMetaData, validateDocument } from './documents';
+import { validateDocument } from './documents';
+import { DocumentMetaData, FileMetaData } from '@/types/documents';
 
 // Abandoned presigned URLs (browser crash after prepareUpload, before completeUpload)
 // leave orphaned R2 objects. Accepted for Phase 1 — single user, cosmetic cost.
