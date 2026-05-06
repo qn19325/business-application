@@ -7,13 +7,14 @@ import { useRef, useState } from 'react';
 import { formatDeadline, nextDeadline } from '@/lib/deadlines';
 import { useDocumentUpload } from './useDocumentUpload';
 import { getDocumentDownloadUrl } from './actions';
-import { ALLOWED_TYPES, MAX_FILE_SIZE } from '@/lib/documents';
+import { ALLOWED_TYPES, validateDocument } from '@/lib/documents';
 
 export type TaxReturnCardProps = SA100TaxReturn | MTDTaxReturn;
 
 function ChecklistRow({ item }: { item: ChecklistItem }) {
   const { upload, isUploading, error: uploadError } = useDocumentUpload();
   const [fileError, setFileError] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -28,13 +29,12 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
           setFileError(null);
           const file = e.target.files?.[0];
           if (file) {
-            if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
-              setFileError('The file type is not allowed');
-              return;
-            }
-
-            if (file.size > MAX_FILE_SIZE) {
-              setFileError('The file size is too large');
+            const isDocumentValid = validateDocument({
+              mimeType: file.type,
+              size: file.size,
+            });
+            if (!isDocumentValid.valid) {
+              setFileError(isDocumentValid.error);
               return;
             }
 
@@ -51,8 +51,13 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
           type="button"
           onClick={async () => {
             if (!item.document) return;
-            const url = await getDocumentDownloadUrl(item.document.id);
-            window.open(url, '_blank');
+            try {
+              setDownloadError(null);
+              const url = await getDocumentDownloadUrl(item.document.id);
+              window.open(url, '_blank');
+            } catch {
+              setDownloadError('Download failed');
+            }
           }}
         >
           {item.document.originalFileName}
@@ -61,6 +66,7 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
       {isUploading && <span>Uploading...</span>}
       {uploadError && <span className="text-red-500">{uploadError}</span>}
       {fileError && <span className="text-red-500">{fileError}</span>}
+      {downloadError && <span className="text-red-500">{downloadError}</span>}
     </div>
   );
 }

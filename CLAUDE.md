@@ -4,7 +4,7 @@
 
 **Active phase: D — AI Preparation Layer**
 **Phase C complete. Document storage live — upload, download, replace flow, client-side + server-side validation all working.**
-**Lifecycle module refactor complete. Both upload functions self-authorize. Document Storage Module complete — r2.ts is now a proper module, AWS SDK contained behind getUploadUrl/getDownloadUrl/deleteObject. Next: Candidate #3 (Deadline Computation Module). See `wiki/topics/architecture-improvement-candidates.md`.**
+**All 4 architecture improvement candidates complete. Lifecycle module, Storage module, Deadline Computation module, Document Validation consolidation — all done. See `wiki/topics/architecture-improvement-candidates.md`.**
 **Phase A shell deployed (no DB):** https://business-application-dun.vercel.app
 
 ---

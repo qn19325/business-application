@@ -4,32 +4,18 @@ import { db } from '@/db';
 import { checklistItem, document, r2PendingDelete } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { deletePendingDelete, getPendingDeletes } from '@/db/documents';
-import { ALLOWED_TYPES, MAX_FILE_SIZE } from './documents';
 import { deleteObject, getUploadUrl } from './r2';
-
-interface UploadMetaData {
-  mimeType: string;
-  size: number;
-}
-
-interface DocumentMetaData {
-  mimeType: string;
-  size: number;
-  originalFileName: string;
-}
+import { DocumentMetaData, FileMetaData, validateDocument } from './documents';
 
 // Abandoned presigned URLs (browser crash after prepareUpload, before completeUpload)
 // leave orphaned R2 objects. Accepted for Phase 1 — single user, cosmetic cost.
-export async function prepareUpload(checklistItemId: string, fileMetaData: UploadMetaData) {
+export async function prepareUpload(checklistItemId: string, fileMetaData: FileMetaData) {
   const item = await getChecklistItem(checklistItemId);
   if (!item) throw new Error('Unauthorised');
 
-  if (!ALLOWED_TYPES.includes(fileMetaData.mimeType as (typeof ALLOWED_TYPES)[number])) {
-    throw new Error('The file type is not allowed');
-  }
-
-  if (fileMetaData.size > MAX_FILE_SIZE) {
-    throw new Error('The file size is too large');
+  const isDocumentValid = validateDocument(fileMetaData);
+  if (!isDocumentValid.valid) {
+    throw new Error(isDocumentValid.error);
   }
 
   const documentKey = randomUUID();
