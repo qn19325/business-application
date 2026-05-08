@@ -4,10 +4,9 @@
 
 **Active phase: D — Workflow Completion**
 **Phase C complete. Document storage live — upload, download, replace flow, client-side + server-side validation all working.**
-**All architecture improvement candidates complete (Phase C + pre-Phase D pass).**
-**Phase D features (5): add tax return → edit client → notes → checklist toggle → status change. See `wiki/topics/application-build-phases.md`.**
+**Phase D features (5): add tax returzn → edit client → notes → checklist toggle → status change. See `wiki/topics/application-build-phases.md`.**
 **Phase E (was Phase D): AI Preparation Layer — starts after Phase D and at least one real return cycle with Lara.**
-**Phase A shell deployed (no DB):** https://business-application-dun.vercel.app
+**Infrastructure pre-provisioned for Phase 2:** domain `instructr.uk` (Cloudflare), Neon DB (London), Vercel project "instructr" — no active deployment. Deploy bundle lands at Phase 2 start with Clerk.
 
 ---
 
@@ -47,7 +46,7 @@ The `client` table is a CRM record — name, NI number, contact details. Clients
 
 ## Wiki
 
-Wiki at `/Users/joshuahall/Documents/business/business-vault/wiki/`. Start at `wiki/index.md` (master catalog) or grep for topics. Read pages on demand; don't duplicate here.
+Wiki at `/Users/joshuahall/Documents/instructr-vault/wiki/`. Start at `wiki/index.md` (master catalog) or grep for topics. Read pages on demand; don't duplicate here.
 
 **Memory vs wiki:** Project decisions, scheduling, sequencing, and architectural notes belong in the wiki. Auto-memory (`.claude/memory/`) is for user preferences, collaboration style, and cross-session state only — things that genuinely can't live in the wiki.
 
@@ -101,7 +100,7 @@ Guide, not exhaustive. Apply judgment — flag issues that aren't listed if they
 ### Code Organisation
 
 - **Group by feature, not by type.**
-- **Wiki-style `.md` files** (decisions, architecture notes, domain context, how-to guides) belong in `/Users/joshuahall/Documents/business/business-vault/wiki/` — not in this repo. Only `CLAUDE.md` / `README.md` and similar source-of-app docs go here.
+- **Wiki-style `.md` files** (decisions, architecture notes, domain context, how-to guides) belong in `/Users/joshuahall/Documents/instructr-vault/wiki/` — not in this repo. Only `CLAUDE.md` / `README.md` and similar source-of-app docs go here.
 
 ---
 

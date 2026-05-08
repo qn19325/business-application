@@ -85,4 +85,18 @@ Only offer to create an ADR when all three are true:
 
 If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
 
+### Save session outcomes to wiki/decisions/
+
+At the end of every grilling session, save a summary of what was decided to the wiki decisions folder at `/Users/joshuahall/Documents/instructr-vault/wiki/decisions/<topic>.md`.
+
+This file is implementation reference — it should capture enough detail that the next session can implement without re-grilling. Include:
+
+- What the feature/topic is
+- The decisions made and why
+- Any edge cases resolved
+- Schema changes needed
+- UI behaviour agreed
+
+Do not save process or conversation — only outcomes. Read on demand; not loaded every session.
+
 </supporting-info>

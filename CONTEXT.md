@@ -40,7 +40,7 @@ A single document slot in the checklist — the expectation that a particular do
 _Avoid_: task, to-do, document request
 
 **Document**:
-An uploaded file (PDF, image, etc.) attached to a tax return — stored in Cloudflare R2, referenced in the `document` table. Distinct from a checklist item: a document is the actual file; a checklist item is the slot that expects it. Linking documents to checklist items is deferred to Phase D.
+An uploaded file (PDF, image, etc.) attached to a checklist item — stored in Cloudflare R2, referenced in the `document` table. Distinct from a checklist item: a document is the actual file; a checklist item is the slot that expects it. One document per checklist item (`document.checklistItemId` FK); replace = delete old + insert new.
 _Avoid_: file (use document), attachment
 
 **MTD submission**:
@@ -66,7 +66,7 @@ _Avoid_: submission (use filing for the HMRC act; submission means an MTD quarte
 - A **Tax return** has many **Checklist items** (one per expected document type)
 - A **Tax return** has many **Documents** (uploaded files)
 - An MTD **Tax return** has many **MTD submissions** (up to five per tax year); SA100 tax returns have none
-- A **Checklist item** expects one document type; a **Document** is the actual uploaded file (linking deferred to Phase D)
+- A **Checklist item** expects one document type; a **Document** is the actual uploaded file attached to that slot (one document per checklist item)
 
 ## Example dialogue
 
