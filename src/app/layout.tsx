@@ -4,8 +4,8 @@ import './globals.css';
 import Sidebar from '@/components/Sidebar';
 
 export const metadata: Metadata = {
-  title: 'Tax Practice',
-  description: 'Client tax return management',
+  title: 'Instructr',
+  description: 'Accounting practice management',
 };
 
 const geistSans = Geist({
