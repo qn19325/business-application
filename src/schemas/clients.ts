@@ -20,3 +20,19 @@ export const clientInputSchema = type({
   regime: type.enumerated(...Object.values(Regime)),
 });
 export type CreateClientInput = typeof clientInputSchema.infer;
+
+export const updateInputSchema = type({
+  clientId: 'string >= 1',
+  firstName: 'string >= 1',
+  lastName: 'string >= 1',
+  niNumber: type('string')
+    .pipe((s) => s.replace(/\s+/g, '').toUpperCase())
+    .to(NI_NUMBER_REGEX),
+  email: type('string')
+    .pipe((s) => s || undefined)
+    .to('string.email | undefined'),
+  phoneNumber: type('string')
+    .pipe((s) => s || undefined)
+    .to('string >= 1 | undefined'),
+});
+export type UpdateClientInput = typeof updateInputSchema.infer;

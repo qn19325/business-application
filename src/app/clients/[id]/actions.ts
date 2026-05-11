@@ -5,8 +5,9 @@ import { getDocument } from '@/db/documents';
 import { completeUpload, prepareUpload } from '@/lib/document-lifecycle';
 import { getDownloadUrl } from '@/lib/r2';
 import { taxReturnInputSchema } from '@/schemas/taxReturn';
-import { insertTaxReturn, getClientById, taxReturnExists } from '@/db/clients';
+import { insertTaxReturn, getClientById, taxReturnExists, updateClient } from '@/db/clients';
 import { ArkErrors } from 'arktype';
+import { updateInputSchema } from '@/schemas/clients';
 
 export async function getUploadUrl(checklistItemId: string, mimeType: string, size: number) {
   return await prepareUpload(checklistItemId, { mimeType, size });
@@ -76,5 +77,47 @@ export async function createTaxReturn(
     console.error('createTaxReturn failed:', error);
 
     return { success: false, error: 'Failed to create tax return' };
+  }
+}
+
+export type UpdateClientResult =
+  | { success: true }
+  | { success: false; error: string; fieldErrors?: Record<string, string> };
+
+export async function editClient(
+  _prevState: UpdateClientResult | null,
+  formData: FormData,
+): Promise<UpdateClientResult> {
+  const input = {
+    clientId: formData.get('clientId'),
+    firstName: formData.get('firstName'),
+    lastName: formData.get('lastName'),
+    niNumber: formData.get('niNumber'),
+    email: formData.get('email'),
+    phoneNumber: formData.get('phoneNumber'),
+  };
+
+  const parsed = updateInputSchema(input);
+  if (parsed instanceof ArkErrors) {
+    const fieldErrors = Object.fromEntries(parsed.map((err) => [err.path.join('.'), err.message]));
+    return { success: false, error: 'Validation failed', fieldErrors };
+  }
+
+  const client = await getClientById(parsed.clientId);
+  if (!client) {
+    return { success: false, error: 'Client not found' };
+  }
+
+  try {
+    await updateClient(client.id, parsed);
+    revalidatePath(`/clients/${parsed.clientId}`);
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === '23505') {
+      return { success: false, error: 'A client with this NI number already exists' };
+    }
+    console.error('editClient failed:', error);
+
+    return { success: false, error: 'Failed to edit client' };
   }
 }

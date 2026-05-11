@@ -1,4 +1,4 @@
-import { type InferSelectModel } from 'drizzle-orm';
+import { and, eq, type InferSelectModel } from 'drizzle-orm';
 import type * as schema from './schema';
 import {
   type Client,
@@ -13,7 +13,7 @@ import { client, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { getCurrentPracticeId } from '@/lib/auth';
 import { currentTaxYear, mtdSubmissionTypes } from '@/lib/tax-return';
 import { getDefaultChecklist } from '@/lib/checklistDefaults';
-import { CreateClientInput } from '@/schemas/clients';
+import { CreateClientInput, UpdateClientInput } from '@/schemas/clients';
 import { CreateTaxReturnInput } from '@/schemas/taxReturn';
 
 type RawChecklistItem = InferSelectModel<typeof schema.checklistItem> & {
@@ -186,6 +186,20 @@ export async function insertClient(input: CreateClientInput): Promise<void> {
 
     await seedTaxReturnRows(tx, { practiceId, taxReturnId: newTaxReturn.id, regime: input.regime });
   });
+}
+
+export async function updateClient(clientId: string, input: UpdateClientInput): Promise<void> {
+  const practiceId = await getCurrentPracticeId();
+  await db
+    .update(client)
+    .set({
+      firstName: input.firstName,
+      lastName: input.lastName,
+      niNumber: input.niNumber,
+      email: input.email,
+      phoneNumber: input.phoneNumber,
+    })
+    .where(and(eq(client.id, clientId), eq(client.practiceId, practiceId)));
 }
 
 export async function insertTaxReturn(input: CreateTaxReturnInput): Promise<void> {

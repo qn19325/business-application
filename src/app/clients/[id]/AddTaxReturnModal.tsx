@@ -30,7 +30,7 @@ export default function AddTaxReturnModal({
           <AddTaxReturnForm
             clientId={clientId}
             existingTaxReturns={existingTaxReturns}
-            onSuccess={() => setIsOpen(false)}
+            onClose={() => setIsOpen(false)}
           />
         )}
       </Modal>

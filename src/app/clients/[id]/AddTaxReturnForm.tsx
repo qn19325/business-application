@@ -10,13 +10,13 @@ const labelClass = 'block text-xs font-semibold text-slate-400 uppercase trackin
 interface AddTaxReturnFormProps {
   clientId: string;
   existingTaxReturns: TaxReturn[];
-  onSuccess: () => void;
+  onClose: () => void;
 }
 
 export default function AddTaxReturnForm({
   clientId,
   existingTaxReturns,
-  onSuccess: onClose,
+  onClose,
 }: AddTaxReturnFormProps) {
   const [state, formAction, isPending] = useActionState(createTaxReturn, null);
   const [selectedRegime, setSelectedRegime] = useState<Regime>(Regime.sa100);
