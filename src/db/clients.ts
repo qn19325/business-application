@@ -97,7 +97,6 @@ export async function getClients(): Promise<Client[]> {
       where: (table, { eq }) => eq(table.practiceId, practiceId),
       with: {
         taxReturns: {
-          orderBy: (table, { desc }) => desc(table.taxYear),
           with: {
             mtdSubmissions: true,
             checklistItems: {
@@ -119,7 +118,6 @@ export async function getClientById(id: string): Promise<Client | null> {
       where: (table, { eq, and }) => and(eq(table.id, id), eq(table.practiceId, practiceId)),
       with: {
         taxReturns: {
-          orderBy: (table, { desc }) => desc(table.taxYear),
           with: {
             mtdSubmissions: true,
             checklistItems: {

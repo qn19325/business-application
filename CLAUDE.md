@@ -2,11 +2,21 @@
 
 ## Current State
 
-**Active phase: D — Workflow Completion**
-**Phase C complete. Document storage live — upload, download, replace flow, client-side + server-side validation all working.**
-**Phase D features (5): add tax returzn → edit client → notes → checklist toggle → status change. See `wiki/topics/application-build-phases.md`.**
-**Phase E (was Phase D): AI Preparation Layer — starts after Phase D and at least one real return cycle with Lara.**
+**Active phase: E — AI Preparation Layer**
+**Phase D complete. All 5 workflow features live — add tax return, edit client, notes, checklist toggle, status change.**
+**Phase E prerequisite: at least one real return cycle with Lara before starting AI work. See `wiki/topics/application-build-phases.md`.**
 **Infrastructure pre-provisioned for Phase 2:** domain `instructr.uk` (Cloudflare), Neon DB (London), Vercel project "instructr" — no active deployment. Deploy bundle lands at Phase 2 start with Clerk.
+
+### Pre-Phase-E queue
+
+Backend cleanup first (independent), then UI alignment (upstream of abstraction), then abstraction, then polish.
+
+1. Fix `mostRecentReturn` bug — `ClientListItem.tsx`.
+2. `src/lib/checklist.ts` — arch review §1.
+3. `src/lib/tax-year.ts` — arch review §2.
+4. UI mockup alignment.
+5. Modal + Form abstraction (`TriggerModal`, `useActionForm`, drop `<Modal>` `isOpen`, shared `<ClientFields>`, normalise `onClose`/`formError`) — arch review §3 + codebase review.
+6. Codebase-review polish — remaining items in `wiki/sessions/2026-05-11-codebase-review-react-simplicity.md`.
 
 ---
 

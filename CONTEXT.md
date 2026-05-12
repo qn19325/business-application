@@ -36,7 +36,7 @@ The full set of expected documents for a tax return. One checklist per tax retur
 _Avoid_: document collection, document request list
 
 **Checklist item**:
-A single document slot in the checklist — the expectation that a particular document type (e.g. P60) is needed for a return. Exists independently of whether a document has been uploaded. Marks whether Lara has received it (`done: boolean`). Items are auto-generated at tax return creation from regime-appropriate defaults, then pruned by Lara.
+A single document slot in the checklist — the expectation that a particular document type (e.g. P60) is needed for a return. Exists independently of whether a document has been uploaded. Marks whether Lara has received it (`done: boolean`). Independent of `document` attachment — all four combinations of `done` × document presence are valid; Lara controls each. Items are auto-generated at tax return creation from regime-appropriate defaults, then pruned by Lara.
 _Avoid_: task, to-do, document request
 
 **Document**:

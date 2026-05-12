@@ -1,3 +1,4 @@
+import { taxReturn } from '@/db/schema';
 import { DeadlineEntry } from '@/types/calendarModels';
 import {
   Client,
@@ -118,6 +119,13 @@ export function mtdSubmissionDeadlines(
     { submissionType: SubmissionType.q_3, deadline: new Date(`${taxYear + 1}-${MTD_Q3_MMDD}`) },
     { submissionType: SubmissionType.q_4, deadline: new Date(`${taxYear + 1}-${MTD_Q4_MMDD}`) },
   ];
+}
+
+export function mostRecentReturn(taxReturns: TaxReturn[]): TaxReturn | undefined {
+  if (!taxReturns.length) return undefined;
+  return taxReturns.reduce((prev, cur) => {
+    return prev.taxYear > cur.taxYear ? prev : cur;
+  });
 }
 
 function firstUnfiledSubmission(submissions: MTDSubmission[]): MTDSubmission | undefined {
