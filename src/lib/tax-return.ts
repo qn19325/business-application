@@ -1,4 +1,3 @@
-import { taxReturn } from '@/db/schema';
 import { DeadlineEntry } from '@/types/calendarModels';
 import {
   Client,
@@ -106,9 +105,12 @@ export function currentTaxYear(today: Date = new Date()): number {
   return year;
 }
 
-export function mtdSubmissionTypes(): SubmissionType[] {
-  return [SubmissionType.q_1, SubmissionType.q_2, SubmissionType.q_3, SubmissionType.q_4];
-}
+export const mtdSubmissionTypes = [
+  SubmissionType.q_1,
+  SubmissionType.q_2,
+  SubmissionType.q_3,
+  SubmissionType.q_4,
+];
 
 export function mtdSubmissionDeadlines(
   taxYear: number,

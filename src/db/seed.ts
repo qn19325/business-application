@@ -94,7 +94,7 @@ async function main() {
   );
 
   await db.insert(mtdSubmission).values(
-    mtdSubmissionTypes().map((submissionType) => ({
+    mtdSubmissionTypes.map((submissionType) => ({
       practiceId: insertedPractice.id,
       taxReturnId: insertedTaxReturnMtd.id,
       submissionType,

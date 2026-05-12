@@ -11,12 +11,12 @@ import {
   taxReturnExists,
   updateClient,
   updateClientNotes,
-  toggleChecklistItemStatus,
   updateTaxReturnStatus,
 } from '@/db/clients';
 import { ArkErrors } from 'arktype';
 import { updateChecklistItemSchema, updateInputSchema, updateNotesSchema } from '@/schemas/clients';
 import { Status } from '@/types/clients';
+import { markItemOutstanding, markItemReceived } from '@/lib/checklist';
 
 export type ActionResult =
   | { success: true }
@@ -32,14 +32,18 @@ export async function recordUpload(
   originalFileName: string,
   mimeType: string,
   size: number,
-) {
-  await completeUpload(checklistItemId, documentKey, {
-    mimeType,
-    size,
-    originalFileName,
-  });
-
-  revalidatePath('/clients', 'layout');
+): Promise<ActionResult> {
+  try {
+    await completeUpload(checklistItemId, documentKey, {
+      mimeType,
+      size,
+      originalFileName,
+    });
+    revalidatePath('/clients', 'layout');
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Failed to upload document' };
+  }
 }
 
 export async function getDocumentDownloadUrl(documentId: string): Promise<string> {
@@ -156,6 +160,7 @@ export async function saveNotes(
 export async function toggleChecklistItem(
   checklistItemId: string,
   clientId: string,
+  done: boolean,
 ): Promise<ActionResult> {
   const input = {
     clientId,
@@ -169,7 +174,11 @@ export async function toggleChecklistItem(
   }
 
   try {
-    await toggleChecklistItemStatus(parsed);
+    if (done) {
+      await markItemOutstanding(parsed.checklistItemId, parsed.clientId);
+    } else {
+      await markItemReceived(parsed.checklistItemId, parsed.clientId);
+    }
     revalidatePath(`/clients/${clientId}`);
     return { success: true };
   } catch (error) {

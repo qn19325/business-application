@@ -34,7 +34,7 @@ function ChecklistRow({ clientId, item }: { clientId: string; item: ChecklistIte
     startTransition(async () => {
       setOptimisticDone((prev) => !prev);
       setToggleError(null);
-      const res = await toggleChecklistItem(item.id, clientId);
+      const res = await toggleChecklistItem(item.id, clientId, item.done);
       if (!res.success) setToggleError(res.error);
     });
   }
@@ -136,7 +136,7 @@ export default function TaxReturnCard({ clientId, taxReturn }: TaxReturnCardProp
               <StatusBadge status={optimisticStatus} />
             </button>
           )}
-          {statusError && <span className="text-red-500 text-sm">{statusError}</span>}
+          {statusError && <span className="text-sm text-red-500">{statusError}</span>}
         </td>
         <td className="py-3 pr-5">{taxReturn.taxYear}</td>
         <td className="py-3 pr-5">{regimeLabel(taxReturn)}</td>

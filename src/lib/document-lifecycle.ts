@@ -1,12 +1,10 @@
 import { getChecklistItem } from '@/db/clients';
 import { randomUUID } from 'crypto';
-import { db } from '@/db';
-import { checklistItem, document, r2PendingDelete } from '@/db/schema';
-import { and, eq } from 'drizzle-orm';
 import { deletePendingDelete, getPendingDeletes } from '@/db/documents';
 import { deleteObject, getUploadUrl } from './r2';
 import { validateDocument } from './documents';
 import { DocumentMetaData, FileMetaData } from '@/types/documents';
+import { attachDocument, markItemReceived } from '@/lib/checklist';
 
 // Abandoned presigned URLs (browser crash after prepareUpload, before completeUpload)
 // leave orphaned R2 objects. Accepted for Phase 1 — single user, cosmetic cost.
@@ -29,39 +27,8 @@ export async function completeUpload(
   documentKey: string,
   fileMetaData: DocumentMetaData,
 ): Promise<void> {
-  const item = await getChecklistItem(checklistItemId);
-  if (!item) throw new Error('Unauthorised');
-
-  const res = await db.transaction(async (tx) => {
-    const existing = await tx.query.document.findFirst({
-      where: (table, { eq }) => eq(table.checklistItemId, checklistItemId),
-    });
-
-    if (existing) {
-      await tx.delete(document).where(eq(document.id, existing.id));
-      await tx
-        .insert(r2PendingDelete)
-        .values({ practiceId: item.practiceId, r2Key: existing.r2Key });
-    }
-
-    await tx.insert(document).values({
-      practiceId: item.practiceId,
-      checklistItemId,
-      r2Key: documentKey,
-      originalFileName: fileMetaData.originalFileName,
-      mimeType: fileMetaData.mimeType,
-      size: fileMetaData.size,
-    });
-
-    await tx
-      .update(checklistItem)
-      .set({ done: true })
-      .where(
-        and(eq(checklistItem.id, checklistItemId), eq(checklistItem.practiceId, item.practiceId)),
-      );
-
-    return { oldR2Key: existing?.r2Key ?? null };
-  });
+  const res = await attachDocument(checklistItemId, documentKey, fileMetaData);
+  await markItemReceived(checklistItemId);
 
   if (res.oldR2Key) {
     try {

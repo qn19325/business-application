@@ -1,4 +1,4 @@
-import { and, eq, inArray, not, type InferSelectModel } from 'drizzle-orm';
+import { and, eq, type InferSelectModel } from 'drizzle-orm';
 import type * as schema from './schema';
 import {
   type Client,
@@ -13,12 +13,7 @@ import { client, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { getCurrentPracticeId } from '@/lib/auth';
 import { currentTaxYear, mtdSubmissionTypes } from '@/lib/tax-return';
 import { getDefaultChecklist } from '@/lib/checklistDefaults';
-import {
-  CreateClientInput,
-  UpdateClientInput,
-  UpdateNotesInput,
-  UpdateChecklistItem,
-} from '@/schemas/clients';
+import { CreateClientInput, UpdateClientInput, UpdateNotesInput } from '@/schemas/clients';
 import { CreateTaxReturnInput, UpdateTaxReturnStatusInput } from '@/schemas/taxReturn';
 
 type RawChecklistItem = InferSelectModel<typeof schema.checklistItem> & {
@@ -134,13 +129,13 @@ export async function getClientById(id: string): Promise<Client | null> {
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-async function seedTaxReturnRows(
+async function insertTaxReturnDependencies(
   tx: Tx,
   { practiceId, taxReturnId, regime }: { practiceId: string; taxReturnId: string; regime: Regime },
 ): Promise<void> {
   if (regime === Regime.mtd) {
     await tx.insert(mtdSubmission).values(
-      mtdSubmissionTypes().map((submissionType) => ({
+      mtdSubmissionTypes.map((submissionType) => ({
         practiceId,
         taxReturnId,
         submissionType,
@@ -188,7 +183,11 @@ export async function insertClient(input: CreateClientInput): Promise<void> {
       })
       .returning();
 
-    await seedTaxReturnRows(tx, { practiceId, taxReturnId: newTaxReturn.id, regime: input.regime });
+    await insertTaxReturnDependencies(tx, {
+      practiceId,
+      taxReturnId: newTaxReturn.id,
+      regime: input.regime,
+    });
   });
 }
 
@@ -225,7 +224,11 @@ export async function insertTaxReturn(input: CreateTaxReturnInput): Promise<void
       })
       .returning();
 
-    await seedTaxReturnRows(tx, { practiceId, taxReturnId: newTaxReturn.id, regime: input.regime });
+    await insertTaxReturnDependencies(tx, {
+      practiceId,
+      taxReturnId: newTaxReturn.id,
+      regime: input.regime,
+    });
   });
 }
 
@@ -250,39 +253,16 @@ export async function taxReturnExists(
 
 export async function getChecklistItem(
   id: string,
+  clientId?: string,
 ): Promise<{ id: string; practiceId: string } | undefined> {
   const practiceId = await getCurrentPracticeId();
   const item = await db.query.checklistItem.findFirst({
     where: (table, { eq, and }) => and(eq(table.id, id), eq(table.practiceId, practiceId)),
+    with: { taxReturn: { columns: { clientId: true } } },
   });
-  return item ? { id: item.id, practiceId } : undefined;
-}
-
-export async function toggleChecklistItemStatus(input: UpdateChecklistItem): Promise<void> {
-  const practiceId = await getCurrentPracticeId();
-  const res = await db
-    .update(checklistItem)
-    .set({
-      done: not(checklistItem.done),
-    })
-    .where(
-      and(
-        eq(checklistItem.id, input.checklistItemId),
-        eq(checklistItem.practiceId, practiceId),
-        inArray(
-          checklistItem.taxReturnId,
-          db
-            .select({ id: taxReturn.id })
-            .from(taxReturn)
-            .where(eq(taxReturn.clientId, input.clientId)),
-        ),
-      ),
-    )
-    .returning();
-
-  if (!res.length) {
-    throw new Error(`Checklist item ${input.checklistItemId} not found`);
-  }
+  if (!item) return undefined;
+  if (clientId && item.taxReturn.clientId !== clientId) return undefined;
+  return { id: item.id, practiceId };
 }
 
 export async function updateClientNotes(input: UpdateNotesInput): Promise<void> {
@@ -314,7 +294,7 @@ export async function updateTaxReturnStatus(input: UpdateTaxReturnStatusInput): 
         eq(taxReturn.id, input.taxReturnId),
       ),
     )
-    .returning();
+    .returning({ id: taxReturn.id });
 
   if (result.length === 0) {
     throw new Error(`Tax Return ${input.taxReturnId} not found`);
