@@ -9,14 +9,14 @@
 
 ### Pre-Phase-E queue
 
-Backend cleanup first (independent), then UI alignment (upstream of abstraction), then abstraction, then polish.
+Layered refactor first (foundation for tests), then UI alignment, then abstraction, then polish.
 
-1. Fix `mostRecentReturn` bug — `ClientListItem.tsx`.
-2. `src/lib/checklist.ts` — arch review §1.
-3. `src/lib/tax-year.ts` — arch review §2.
-4. UI mockup alignment.
-5. Modal + Form abstraction (`TriggerModal`, `useActionForm`, drop `<Modal>` `isOpen`, shared `<ClientFields>`, normalise `onClose`/`formError`) — arch review §3 + codebase review.
-6. Codebase-review polish — remaining items in `wiki/sessions/2026-05-11-codebase-review-react-simplicity.md`.
+1. **Layered refactor** — migrate to `logic/` + `repo/` + `service/` + `infra/` per `docs/adr/four-tier-layered-architecture.md`. Subsumes the previous "extract `lib/checklist.ts`" and "extract `lib/tax-year.ts`" items. Order: `infra/` move → `logic/` move (incl. new `tax-year.ts`) → repo split → service split (incl. checklist as first-class operations from arch review §1) → action layer resolves `practiceId`. Done when each tier is independently testable per the ADR's acceptance criteria.
+2. UI mockup alignment.
+3. Modal + Form abstraction (`TriggerModal`, `useActionForm`, drop `<Modal>` `isOpen`, shared `<ClientFields>`, normalise `onClose`/`formError`) — arch review §3 + codebase review.
+4. Codebase-review polish — remaining items in `wiki/sessions/2026-05-11-codebase-review-react-simplicity.md`.
+
+Note: `mostRecentReturn` bug (was item 1) — fixed in commit 10a221c.
 
 ---
 
@@ -109,8 +109,8 @@ Guide, not exhaustive. Apply judgment — flag issues that aren't listed if they
 
 ### Code Organisation
 
-- **Group by feature, not by type.**
-- **Wiki-style `.md` files** (decisions, architecture notes, domain context, how-to guides) belong in `/Users/joshuahall/Documents/instructr-vault/wiki/` — not in this repo. Only `CLAUDE.md` / `README.md` and similar source-of-app docs go here.
+- **Four-tier layered architecture: `logic/` → `repo/` → `service/` → `app/`, with `infra/` as the external-systems edge.** Layer-grouped, not feature-grouped. Import direction is one-way. `practiceId` is passed explicitly into repos and services, never resolved inside them. See `docs/adr/four-tier-layered-architecture.md` for the full rules and rationale.
+- **Code-structure ADRs live in `docs/adr/`** (this repo) — file layout, type architecture, layering rules, anything the code must obey. Product/domain decisions (HMRC scope, brand, validation strategy, phase plans) live in `/Users/joshuahall/Documents/instructr-vault/wiki/decisions/`. The rule of thumb: if the decision constrains code on disk, it belongs with the code; if it constrains the product or process, it belongs in the vault.
 
 ---
 

@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import { Regime, TaxReturn } from '@/types/clients';
 import { createTaxReturn } from './actions';
-import { currentTaxYear } from '@/lib/tax-return';
+import { currentTaxYear } from '@/logic/tax-year';
 import { labelClass } from '@/lib/form-styles';
 import FormError from '@/components/FormError';
 import FieldError from '@/components/FieldError';
@@ -67,7 +67,10 @@ export default function AddTaxReturnForm({
                   name="regime"
                   value={Regime.sa100}
                   defaultChecked
-                  onChange={(e) => setSelectedRegime(e.target.value as Regime)}
+                  onChange={(e) => {
+                    const next = Object.values(Regime).find((r) => r === e.target.value);
+                    if (next) setSelectedRegime(next);
+                  }}
                 />
                 SA100
               </label>
@@ -76,7 +79,10 @@ export default function AddTaxReturnForm({
                   type="radio"
                   name="regime"
                   value={Regime.mtd}
-                  onChange={(e) => setSelectedRegime(e.target.value as Regime)}
+                  onChange={(e) => {
+                    const next = Object.values(Regime).find((r) => r === e.target.value);
+                    if (next) setSelectedRegime(next);
+                  }}
                 />
                 MTD
               </label>

@@ -1,9 +1,11 @@
 import ClientListItem from './ClientListItem';
-import { getClients } from '@/db/clients';
+import { getClients } from '@/service/clients';
+import { getCurrentPracticeId } from '@/infra/auth';
 import AddClientModal from './AddClientModal';
 
 export default async function Page() {
-  const clients = await getClients();
+  const practiceId = await getCurrentPracticeId();
+  const clients = await getClients(practiceId);
   return (
     <>
       <div className="mb-6 flex items-center justify-between">

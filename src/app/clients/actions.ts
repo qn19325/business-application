@@ -1,9 +1,10 @@
 'use server';
 
-import { insertClient } from '@/db/clients';
 import { revalidatePath } from 'next/cache';
-import { clientInputSchema } from '@/schemas/clients';
 import { ArkErrors } from 'arktype';
+import { clientInputSchema } from '@/schemas/clients';
+import { getCurrentPracticeId } from '@/infra/auth';
+import * as clientService from '@/service/clients';
 
 export type CreateClientResult =
   | { success: true }
@@ -28,8 +29,9 @@ export async function createClient(
     return { success: false, error: 'Validation failed', fieldErrors };
   }
 
+  const practiceId = await getCurrentPracticeId();
   try {
-    await insertClient(parsed);
+    await clientService.insertClient(practiceId, parsed);
     revalidatePath('/clients');
     return { success: true };
   } catch (error) {

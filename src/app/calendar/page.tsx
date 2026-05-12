@@ -1,11 +1,13 @@
-import { getDeadlineEntries, formatDeadline } from '@/lib/tax-return';
+import { getDeadlineEntries, formatDeadline } from '@/logic/tax-return';
 import { DeadlineEntry } from '@/types/calendarModels';
 import { Fragment } from 'react';
 import StatusBadge from '@/components/StatusBadge';
-import { getClients } from '@/db/clients';
+import { getClients } from '@/service/clients';
+import { getCurrentPracticeId } from '@/infra/auth';
 
 export default async function Page() {
-  const clients = await getClients();
+  const practiceId = await getCurrentPracticeId();
+  const clients = await getClients(practiceId);
   const pageData: DeadlineEntry[] = getDeadlineEntries(clients);
 
   const groupedDeadlineEntries = pageData.reduce<Record<string, DeadlineEntry[]>>((acc, entry) => {

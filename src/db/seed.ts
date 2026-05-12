@@ -1,9 +1,10 @@
-import { db } from './index';
+import { db } from '@/infra/db';
 import { client, practice, taxReturn, checklistItem, mtdSubmission } from './schema';
 import { eq } from 'drizzle-orm';
 import { Regime, Status, MtdSubmissionStatus } from '@/types/clients';
-import { currentTaxYear, mtdSubmissionTypes } from '@/lib/tax-return';
-import { getDefaultChecklist } from '@/lib/checklistDefaults';
+import { currentTaxYear } from '@/logic/tax-year';
+import { mtdSubmissionTypes } from '@/logic/tax-return';
+import { getDefaultChecklist } from '@/logic/checklist-defaults';
 
 const SEED_PRACTICE_NAME = 'Warwick & Co';
 

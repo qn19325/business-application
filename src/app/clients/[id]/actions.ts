@@ -1,29 +1,23 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getDocument } from '@/db/documents';
-import { completeUpload, prepareUpload } from '@/lib/document-lifecycle';
-import { getDownloadUrl } from '@/lib/r2';
-import { taxReturnInputSchema, updateTaxReturnStatusSchema } from '@/schemas/taxReturn';
-import {
-  insertTaxReturn,
-  getClientById,
-  taxReturnExists,
-  updateClient,
-  updateClientNotes,
-  updateTaxReturnStatus,
-} from '@/db/clients';
 import { ArkErrors } from 'arktype';
+import { getCurrentPracticeId } from '@/infra/auth';
+import * as clientService from '@/service/clients';
+import * as taxReturnService from '@/service/tax-returns';
+import * as checklistService from '@/service/checklist';
+import * as documentService from '@/service/documents';
+import { taxReturnInputSchema, updateTaxReturnStatusSchema } from '@/schemas/taxReturn';
 import { updateChecklistItemSchema, updateInputSchema, updateNotesSchema } from '@/schemas/clients';
 import { Status } from '@/types/clients';
-import { markItemOutstanding, markItemReceived } from '@/lib/checklist';
 
 export type ActionResult =
   | { success: true }
   | { success: false; error: string; fieldErrors?: Record<string, string> };
 
 export async function getUploadUrl(checklistItemId: string, mimeType: string, size: number) {
-  return await prepareUpload(checklistItemId, { mimeType, size });
+  const practiceId = await getCurrentPracticeId();
+  return documentService.prepareUpload(practiceId, checklistItemId, { mimeType, size });
 }
 
 export async function recordUpload(
@@ -33,8 +27,9 @@ export async function recordUpload(
   mimeType: string,
   size: number,
 ): Promise<ActionResult> {
+  const practiceId = await getCurrentPracticeId();
   try {
-    await completeUpload(checklistItemId, documentKey, {
+    await documentService.completeUpload(practiceId, checklistItemId, documentKey, {
       mimeType,
       size,
       originalFileName,
@@ -47,13 +42,8 @@ export async function recordUpload(
 }
 
 export async function getDocumentDownloadUrl(documentId: string): Promise<string> {
-  const document = await getDocument(documentId);
-
-  if (!document) {
-    throw new Error('Document not found');
-  }
-
-  return getDownloadUrl(document.r2Key);
+  const practiceId = await getCurrentPracticeId();
+  return documentService.getDocumentDownloadUrl(practiceId, documentId);
 }
 
 export async function createTaxReturn(
@@ -72,18 +62,25 @@ export async function createTaxReturn(
     return { success: false, error: 'Validation failed', fieldErrors };
   }
 
-  const client = await getClientById(parsed.clientId);
+  const practiceId = await getCurrentPracticeId();
+
+  const client = await clientService.getClientById(practiceId, parsed.clientId);
   if (!client) {
     return { success: false, error: 'Client not found' };
   }
 
-  const duplicate = await taxReturnExists(parsed.clientId, parsed.taxYear, parsed.regime);
+  const duplicate = await taxReturnService.taxReturnExists(
+    practiceId,
+    parsed.clientId,
+    parsed.taxYear,
+    parsed.regime,
+  );
   if (duplicate) {
     return { success: false, error: 'A tax return for this year and regime already exists' };
   }
 
   try {
-    await insertTaxReturn(parsed);
+    await taxReturnService.insertTaxReturn(practiceId, parsed);
     revalidatePath(`/clients/${parsed.clientId}`);
     return { success: true };
   } catch (error) {
@@ -112,13 +109,15 @@ export async function editClient(
     return { success: false, error: 'Validation failed', fieldErrors };
   }
 
-  const client = await getClientById(parsed.clientId);
+  const practiceId = await getCurrentPracticeId();
+
+  const client = await clientService.getClientById(practiceId, parsed.clientId);
   if (!client) {
     return { success: false, error: 'Client not found' };
   }
 
   try {
-    await updateClient(parsed);
+    await clientService.updateClient(practiceId, parsed);
     revalidatePath(`/clients/${parsed.clientId}`);
     return { success: true };
   } catch (error) {
@@ -135,10 +134,7 @@ export async function saveNotes(
   clientId: string,
   notes: string | undefined,
 ): Promise<ActionResult> {
-  const input = {
-    clientId,
-    notes,
-  };
+  const input = { clientId, notes };
 
   const parsed = updateNotesSchema(input);
   if (parsed instanceof ArkErrors) {
@@ -146,8 +142,9 @@ export async function saveNotes(
     return { success: false, error: 'Validation failed', fieldErrors };
   }
 
+  const practiceId = await getCurrentPracticeId();
   try {
-    await updateClientNotes(parsed);
+    await clientService.updateClientNotes(practiceId, parsed);
     revalidatePath(`/clients/${clientId}`);
     return { success: true };
   } catch (error) {
@@ -162,10 +159,7 @@ export async function toggleChecklistItem(
   clientId: string,
   done: boolean,
 ): Promise<ActionResult> {
-  const input = {
-    clientId,
-    checklistItemId,
-  };
+  const input = { clientId, checklistItemId };
 
   const parsed = updateChecklistItemSchema(input);
   if (parsed instanceof ArkErrors) {
@@ -173,11 +167,16 @@ export async function toggleChecklistItem(
     return { success: false, error: 'Validation failed', fieldErrors };
   }
 
+  const practiceId = await getCurrentPracticeId();
   try {
     if (done) {
-      await markItemOutstanding(parsed.checklistItemId, parsed.clientId);
+      await checklistService.markItemOutstanding(
+        practiceId,
+        parsed.checklistItemId,
+        parsed.clientId,
+      );
     } else {
-      await markItemReceived(parsed.checklistItemId, parsed.clientId);
+      await checklistService.markItemReceived(practiceId, parsed.checklistItemId, parsed.clientId);
     }
     revalidatePath(`/clients/${clientId}`);
     return { success: true };
@@ -193,11 +192,7 @@ export async function changeTaxReturnStatus(
   clientId: string,
   status: Status,
 ): Promise<ActionResult> {
-  const input = {
-    clientId,
-    taxReturnId,
-    status,
-  };
+  const input = { clientId, taxReturnId, status };
 
   const parsed = updateTaxReturnStatusSchema(input);
   if (parsed instanceof ArkErrors) {
@@ -205,8 +200,9 @@ export async function changeTaxReturnStatus(
     return { success: false, error: 'Validation failed', fieldErrors };
   }
 
+  const practiceId = await getCurrentPracticeId();
   try {
-    await updateTaxReturnStatus(parsed);
+    await taxReturnService.changeTaxReturnStatus(practiceId, parsed);
     revalidatePath(`/clients/${clientId}`);
     return { success: true };
   } catch (error) {

@@ -1,6 +1,6 @@
 import { type } from 'arktype';
 import { Regime, Status } from '@/types/clients';
-import { currentTaxYear } from '@/lib/tax-return';
+import { currentTaxYear } from '@/logic/tax-year';
 
 export const taxReturnInputSchema = type({
   clientId: 'string >= 1',

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { drainPendingDeletes } from '@/lib/document-lifecycle';
+import { drainPendingDeletes } from '@/service/documents';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');

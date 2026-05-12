@@ -1,6 +1,6 @@
 import { Status, MtdSubmissionStatus } from '@/types/clients';
 import ColorDot from '@/components/ColorDot';
-import { taxReturnStatusDisplay, Display, mtdSubmissionStatusDisplay } from '@/lib/status';
+import { taxReturnStatusDisplay, Display, mtdSubmissionStatusDisplay } from '@/logic/status';
 
 type AnyStatus = Status | MtdSubmissionStatus;
 

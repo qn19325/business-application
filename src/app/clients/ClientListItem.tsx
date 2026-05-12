@@ -7,7 +7,7 @@ import {
   mostRecentReturn,
   nextDeadline,
   regimeLabel,
-} from '@/lib/tax-return';
+} from '@/logic/tax-return';
 
 interface ClientListItemProps {
   client: Client;

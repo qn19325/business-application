@@ -8,13 +8,7 @@ import {
   MTDSubmission,
   MtdSubmissionStatus,
 } from '@/types/clients';
-
-const MTD_Q1_MMDD = '08-07';
-const MTD_Q2_MMDD = '11-07';
-const MTD_Q3_MMDD = '02-07';
-const MTD_Q4_MMDD = '05-07';
-const TAX_YEAR_DEADLINE_MONTH_NUM = 4;
-const TAX_YEAR_DEADLINE_DAY_NUM = 5;
+import { mtdSubmissionDeadlines, sa100Deadline } from '@/logic/deadlines';
 
 export function nextDeadline(taxReturn: TaxReturn): Date | null {
   if (taxReturn.regime === Regime.sa100) {
@@ -84,44 +78,12 @@ export function formatDeadline(d: Date): string {
   return d.toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
-export function currentTaxYear(today: Date = new Date()): number {
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/London',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-  }).formatToParts(today);
-
-  const year = Number(parts.find((p) => p.type === 'year')!.value);
-  const month = Number(parts.find((p) => p.type === 'month')!.value);
-  const day = Number(parts.find((p) => p.type === 'day')!.value);
-
-  if (
-    month < TAX_YEAR_DEADLINE_MONTH_NUM ||
-    (month === TAX_YEAR_DEADLINE_MONTH_NUM && day <= TAX_YEAR_DEADLINE_DAY_NUM)
-  ) {
-    return year - 1;
-  }
-  return year;
-}
-
 export const mtdSubmissionTypes = [
   SubmissionType.q_1,
   SubmissionType.q_2,
   SubmissionType.q_3,
   SubmissionType.q_4,
 ];
-
-export function mtdSubmissionDeadlines(
-  taxYear: number,
-): { submissionType: SubmissionType; deadline: Date }[] {
-  return [
-    { submissionType: SubmissionType.q_1, deadline: new Date(`${taxYear}-${MTD_Q1_MMDD}`) },
-    { submissionType: SubmissionType.q_2, deadline: new Date(`${taxYear}-${MTD_Q2_MMDD}`) },
-    { submissionType: SubmissionType.q_3, deadline: new Date(`${taxYear + 1}-${MTD_Q3_MMDD}`) },
-    { submissionType: SubmissionType.q_4, deadline: new Date(`${taxYear + 1}-${MTD_Q4_MMDD}`) },
-  ];
-}
 
 export function mostRecentReturn(taxReturns: TaxReturn[]): TaxReturn | undefined {
   if (!taxReturns.length) return undefined;
@@ -132,8 +94,4 @@ export function mostRecentReturn(taxReturns: TaxReturn[]): TaxReturn | undefined
 
 function firstUnfiledSubmission(submissions: MTDSubmission[]): MTDSubmission | undefined {
   return submissions.find((submission) => submission.status !== MtdSubmissionStatus.submitted);
-}
-
-function sa100Deadline(taxYear: number): Date {
-  return new Date(Date.UTC(taxYear + 1, 0, 31));
 }
