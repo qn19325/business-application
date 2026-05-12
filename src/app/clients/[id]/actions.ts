@@ -7,7 +7,7 @@ import * as clientService from '@/service/clients';
 import * as taxReturnService from '@/service/tax-returns';
 import * as checklistService from '@/service/checklist';
 import * as documentService from '@/service/documents';
-import { taxReturnInputSchema, updateTaxReturnStatusSchema } from '@/schemas/taxReturn';
+import { taxReturnInputSchema, updateTaxReturnStatusSchema } from '@/schemas/tax-return';
 import { updateChecklistItemSchema, updateInputSchema, updateNotesSchema } from '@/schemas/clients';
 import { Status } from '@/types/clients';
 

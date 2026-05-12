@@ -1,5 +1,5 @@
 import { getDeadlineEntries, formatDeadline } from '@/logic/tax-return';
-import { DeadlineEntry } from '@/types/calendarModels';
+import { DeadlineEntry } from '@/types/calendar';
 import { Fragment } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { getClients } from '@/service/clients';

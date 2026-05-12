@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { Regime, TaxReturn } from '@/types/clients';
 import { createTaxReturn } from './actions';
 import { currentTaxYear } from '@/logic/tax-year';
-import { labelClass } from '@/lib/form-styles';
+import { inputClass, labelClass } from '@/components/formStyles';
 import FormError from '@/components/FormError';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';
@@ -42,7 +42,7 @@ export default function AddTaxReturnForm({
               <label className={labelClass} htmlFor="taxYear">
                 Year
               </label>
-              <select name="taxYear" id="taxYear">
+              <select className={inputClass} name="taxYear" id="taxYear">
                 {years.map((year) => (
                   <option
                     key={year}

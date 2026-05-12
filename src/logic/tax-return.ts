@@ -1,4 +1,4 @@
-import { DeadlineEntry } from '@/types/calendarModels';
+import { DeadlineEntry } from '@/types/calendar';
 import {
   Client,
   Status,

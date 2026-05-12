@@ -3,7 +3,7 @@ import { db } from '@/infra/db';
 import { taxReturn } from '@/db/schema';
 import { Regime, Status } from '@/types/clients';
 import type { DbOrTx } from './index';
-import type { UpdateTaxReturnStatusInput } from '@/schemas/taxReturn';
+import type { UpdateTaxReturnStatusInput } from '@/schemas/tax-return';
 
 export async function insertTaxReturn(
   practiceId: string,

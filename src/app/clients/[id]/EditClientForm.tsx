@@ -3,7 +3,7 @@
 import { useActionState, useEffect } from 'react';
 import { NI_NUMBER_PATTERN } from '@/schemas/clients';
 import { editClient } from './actions';
-import { labelClass, inputClass } from '@/lib/form-styles';
+import { labelClass, inputClass } from '@/components/formStyles';
 import FormError from '@/components/FormError';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';

@@ -4,7 +4,7 @@ import { useActionState, useEffect } from 'react';
 import { createClient } from './actions';
 import { Regime } from '@/types/clients';
 import { NI_NUMBER_PATTERN } from '@/schemas/clients';
-import { inputClass, labelClass } from '@/lib/form-styles';
+import { inputClass, labelClass } from '@/components/formStyles';
 import FormError from '@/components/FormError';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';
