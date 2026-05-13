@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Regime, TaxReturn } from '@/types/clients';
 import { createTaxReturn } from './actions';
 import { currentTaxYear } from '@/logic/tax-year';
@@ -8,6 +8,7 @@ import { inputClass, labelClass } from '@/components/formStyles';
 import FormError from '@/components/FormError';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';
+import { useActionForm } from '@/hooks/useActionForm';
 
 interface AddTaxReturnFormProps {
   clientId: string;
@@ -20,20 +21,14 @@ export default function AddTaxReturnForm({
   existingTaxReturns,
   onClose,
 }: AddTaxReturnFormProps) {
-  const [state, formAction, isPending] = useActionState(createTaxReturn, null);
+  const { formAction, isPending, fieldErrors, formError } = useActionForm(createTaxReturn, onClose);
   const [selectedRegime, setSelectedRegime] = useState<Regime>(Regime.sa100);
   const curTaxYear = currentTaxYear();
   const years = [curTaxYear - 3, curTaxYear - 2, curTaxYear - 1, curTaxYear, curTaxYear + 1];
-  const fieldErrors = state?.success === false ? state.fieldErrors : undefined;
-  const formError = state?.success === false ? state.error : undefined;
-
-  useEffect(() => {
-    if (state?.success) onClose();
-  }, [state, onClose]);
 
   return (
     <>
-      <FormError error={formError} />
+      <FormError error={!fieldErrors ? formError : undefined} />
       <form action={formAction}>
         <fieldset disabled={isPending} className="space-y-4">
           <input type="hidden" name="clientId" value={clientId} />

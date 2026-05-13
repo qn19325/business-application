@@ -1,12 +1,12 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
 import { NI_NUMBER_PATTERN } from '@/schemas/clients';
 import { editClient } from './actions';
 import { labelClass, inputClass } from '@/components/formStyles';
 import FormError from '@/components/FormError';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';
+import { useActionForm } from '@/hooks/useActionForm';
 
 interface EditClientFormProps {
   clientId: string;
@@ -14,7 +14,7 @@ interface EditClientFormProps {
   lastName: string;
   niNumber: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
   onClose: () => void;
 }
 
@@ -24,20 +24,14 @@ export default function EditClientForm({
   lastName,
   niNumber,
   email,
-  phone,
+  phoneNumber,
   onClose,
 }: EditClientFormProps) {
-  const [state, formAction, isPending] = useActionState(editClient, null);
-  const fieldErrors = state?.success === false ? state.fieldErrors : undefined;
-  const formError = state?.success === false ? state.error : undefined;
-
-  useEffect(() => {
-    if (state?.success) onClose();
-  }, [state, onClose]);
+  const { formAction, isPending, fieldErrors, formError } = useActionForm(editClient, onClose);
 
   return (
     <>
-      <FormError error={formError} />
+      <FormError error={!fieldErrors ? formError : undefined} />
       <form action={formAction}>
         <fieldset disabled={isPending} className="space-y-4">
           <input type="hidden" name="clientId" value={clientId} />
@@ -110,7 +104,7 @@ export default function EditClientForm({
               type="tel"
               name="phoneNumber"
               className={inputClass}
-              defaultValue={phone}
+              defaultValue={phoneNumber}
             />
             <FieldError fieldErrors={fieldErrors} name="phoneNumber" />
           </div>

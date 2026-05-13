@@ -1,6 +1,5 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
 import { createClient } from './actions';
 import { Regime } from '@/types/clients';
 import { NI_NUMBER_PATTERN } from '@/schemas/clients';
@@ -8,15 +7,10 @@ import { inputClass, labelClass } from '@/components/formStyles';
 import FormError from '@/components/FormError';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';
+import { useActionForm } from '@/hooks/useActionForm';
 
-export default function AddClientForm({ onSuccess }: { onSuccess: () => void }) {
-  const [state, formAction, isPending] = useActionState(createClient, null);
-  const fieldErrors = state?.success === false ? state.fieldErrors : undefined;
-  const formError = state?.success === false ? state.error : undefined;
-
-  useEffect(() => {
-    if (state?.success) onSuccess();
-  }, [state, onSuccess]);
+export default function AddClientForm({ onClose }: { onClose: () => void }) {
+  const { formAction, isPending, fieldErrors, formError } = useActionForm(createClient, onClose);
 
   return (
     <>
@@ -25,19 +19,26 @@ export default function AddClientForm({ onSuccess }: { onSuccess: () => void }) 
         <fieldset disabled={isPending} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>First Name</label>
-              <input type="text" name="firstName" required className={inputClass} />
+              <label className={labelClass} htmlFor="firstName">
+                First Name
+              </label>
+              <input id="firstName" type="text" name="firstName" required className={inputClass} />
               <FieldError fieldErrors={fieldErrors} name="firstName" />
             </div>
             <div>
-              <label className={labelClass}>Last Name</label>
-              <input type="text" name="lastName" required className={inputClass} />
+              <label className={labelClass} htmlFor="lastName">
+                Last Name
+              </label>
+              <input id="lastName" type="text" name="lastName" required className={inputClass} />
               <FieldError fieldErrors={fieldErrors} name="lastName" />
             </div>
           </div>
           <div>
-            <label className={labelClass}>NI Number</label>
+            <label className={labelClass} htmlFor="niNumber">
+              NI Number
+            </label>
             <input
+              id="niNumber"
               type="text"
               name="niNumber"
               required
@@ -49,13 +50,17 @@ export default function AddClientForm({ onSuccess }: { onSuccess: () => void }) 
             <FieldError fieldErrors={fieldErrors} name="niNumber" />
           </div>
           <div>
-            <label className={labelClass}>Email</label>
-            <input type="email" name="email" className={inputClass} />
+            <label className={labelClass} htmlFor="email">
+              Email
+            </label>
+            <input id="email" type="email" name="email" className={inputClass} />
             <FieldError fieldErrors={fieldErrors} name="email" />
           </div>
           <div>
-            <label className={labelClass}>Phone</label>
-            <input type="tel" name="phoneNumber" className={inputClass} />
+            <label className={labelClass} htmlFor="phoneNumber">
+              Phone
+            </label>
+            <input id="phoneNumber" type="tel" name="phoneNumber" className={inputClass} />
             <FieldError fieldErrors={fieldErrors} name="phoneNumber" />
           </div>
           <div>
@@ -74,7 +79,7 @@ export default function AddClientForm({ onSuccess }: { onSuccess: () => void }) 
           </div>
         </fieldset>
 
-        <FormActions onClose={onSuccess} isPending={isPending} submitLabel="Add Client" />
+        <FormActions onClose={onClose} isPending={isPending} submitLabel="Add Client" />
       </form>
     </>
   );

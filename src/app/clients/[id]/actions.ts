@@ -8,10 +8,8 @@ import * as documentService from '@/service/documents';
 import { taxReturnInputSchema, updateTaxReturnStatusSchema } from '@/schemas/tax-return';
 import { updateChecklistItemSchema, updateInputSchema, updateNotesSchema } from '@/schemas/clients';
 import { Status } from '@/types/clients';
-
-export type ActionResult =
-  | { success: true }
-  | { success: false; error: string; fieldErrors?: Record<string, string> };
+import { ActionResult } from '@/types/actions';
+import { ServiceError } from '@/service/errors';
 
 export async function getUploadUrl(checklistItemId: string, mimeType: string, size: number) {
   const practiceId = await getCurrentPracticeId();
@@ -62,29 +60,13 @@ export async function createTaxReturn(
   }
 
   const practiceId = await getCurrentPracticeId();
-
-  const client = await clientService.getClientById(practiceId, parsed.clientId);
-  if (!client) {
-    return { success: false, error: 'Client not found' };
-  }
-
-  const duplicate = await clientService.taxReturnExists(
-    practiceId,
-    parsed.clientId,
-    parsed.taxYear,
-    parsed.regime,
-  );
-  if (duplicate) {
-    return { success: false, error: 'A tax return for this year and regime already exists' };
-  }
-
   try {
     await clientService.insertTaxReturn(practiceId, parsed);
     revalidatePath(`/clients/${parsed.clientId}`);
     return { success: true };
   } catch (error) {
+    if (error instanceof ServiceError) return { success: false, error: error.message };
     console.error('createTaxReturn failed:', error);
-
     return { success: false, error: 'Failed to create tax return' };
   }
 }
@@ -109,22 +91,16 @@ export async function editClient(
   }
 
   const practiceId = await getCurrentPracticeId();
-
-  const client = await clientService.getClientById(practiceId, parsed.clientId);
-  if (!client) {
-    return { success: false, error: 'Client not found' };
-  }
-
   try {
     await clientService.updateClient(practiceId, parsed);
     revalidatePath(`/clients/${parsed.clientId}`);
     return { success: true };
   } catch (error) {
+    if (error instanceof ServiceError) return { success: false, error: error.message };
     if (error instanceof Error && 'code' in error && error.code === '23505') {
       return { success: false, error: 'A client with this NI number already exists' };
     }
     console.error('editClient failed:', error);
-
     return { success: false, error: 'Failed to edit client' };
   }
 }

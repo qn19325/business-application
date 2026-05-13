@@ -1,9 +1,8 @@
 'use client';
 
 import Modal from '@/components/Modal';
-import { TaxReturn } from '@/types/clients';
-import { useState } from 'react';
 import AddTaxReturnForm from './AddTaxReturnForm';
+import { TaxReturn } from '@/types/clients';
 
 interface AddTaxReturnModalProps {
   clientId: string;
@@ -14,26 +13,25 @@ export default function AddTaxReturnModal({
   clientId,
   existingTaxReturns,
 }: AddTaxReturnModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <div>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-extrabold text-white hover:bg-indigo-700"
-      >
-        Add Tax Return
-      </button>
-      <Modal title="Add Tax Return" isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        {/* Conditional render remounts AddTaxReturnForm on open, resetting useActionState */}
-        {isOpen && (
-          <AddTaxReturnForm
-            clientId={clientId}
-            existingTaxReturns={existingTaxReturns}
-            onClose={() => setIsOpen(false)}
-          />
-        )}
-      </Modal>
-    </div>
+    <Modal
+      title="Add Tax Return"
+      trigger={(open) => (
+        <button
+          onClick={open}
+          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-extrabold text-white hover:bg-indigo-700"
+        >
+          Add Tax Return
+        </button>
+      )}
+    >
+      {(close) => (
+        <AddTaxReturnForm
+          clientId={clientId}
+          existingTaxReturns={existingTaxReturns}
+          onClose={close}
+        />
+      )}
+    </Modal>
   );
 }

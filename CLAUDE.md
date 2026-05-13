@@ -10,7 +10,7 @@
 ### Pre-deploy queue (in order)
 
 1. ✅ **Layered refactor** — four-tier architecture complete (commit 91907f4).
-2. **UI mockup alignment** — align UI to design mockups before public visibility.
+2. ✅ **UI mockup alignment** — align UI to design mockups before public visibility.
 3. **Modal + Form abstraction** (`TriggerModal`, `useActionForm`, drop `<Modal>` `isOpen`, shared `<ClientFields>`, normalise `onClose`/`formError`) — arch review §3 + codebase review. Code is public on GitHub; abstraction matters for CV.
 4. **Secrets audit** — confirm no real client data, NI numbers, or secrets in committed codebase before deploy.
 5. **Deploy** — Clerk setup → Neon read-only role for demo → Vercel env vars → `db:push` → demo seed data.

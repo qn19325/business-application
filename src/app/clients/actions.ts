@@ -5,15 +5,12 @@ import { ArkErrors } from 'arktype';
 import { clientInputSchema } from '@/schemas/clients';
 import { getCurrentPracticeId } from '@/infra/auth';
 import * as clientService from '@/service/clients';
-
-export type CreateClientResult =
-  | { success: true }
-  | { success: false; error: string; fieldErrors?: Record<string, string> };
+import { ActionResult } from '@/types/actions';
 
 export async function createClient(
-  _prevState: CreateClientResult | null,
+  _prevState: ActionResult | null,
   formData: FormData,
-): Promise<CreateClientResult> {
+): Promise<ActionResult> {
   const input = {
     firstName: formData.get('firstName'),
     lastName: formData.get('lastName'),

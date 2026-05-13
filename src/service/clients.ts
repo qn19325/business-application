@@ -7,6 +7,7 @@ import { currentTaxYear } from '@/logic/tax-year';
 import { getDefaultChecklist } from '@/logic/checklist-defaults';
 import { mtdSubmissionTypes } from '@/logic/deadlines';
 import { Regime, type Client } from '@/types/clients';
+import { ServiceError } from '@/service/errors';
 import type { CreateClientInput, UpdateClientInput, UpdateNotesInput } from '@/schemas/clients';
 import type { CreateTaxReturnInput, UpdateTaxReturnStatusInput } from '@/schemas/tax-return';
 import { type Tx, withTransaction } from '@/repo';
@@ -33,6 +34,8 @@ export async function insertClient(practiceId: string, input: CreateClientInput)
 }
 
 export async function updateClient(practiceId: string, input: UpdateClientInput): Promise<void> {
+  const client = await clientRepo.getClientById(practiceId, input.clientId);
+  if (!client) throw new ServiceError('Client not found');
   await clientRepo.updateClient(practiceId, input);
 }
 
@@ -47,6 +50,15 @@ export async function insertTaxReturn(
   practiceId: string,
   input: CreateTaxReturnInput,
 ): Promise<void> {
+  const client = await clientRepo.getClientById(practiceId, input.clientId);
+  if (!client) throw new ServiceError('Client not found');
+  const duplicate = await taxReturnRepo.taxReturnExists(
+    practiceId,
+    input.clientId,
+    input.taxYear,
+    input.regime,
+  );
+  if (duplicate) throw new ServiceError('A tax return for this year and regime already exists');
   await withTransaction((tx) => createTaxReturnTree(tx, practiceId, input));
 }
 
@@ -72,8 +84,8 @@ export async function assertChecklistItemOwned(
   clientId?: string,
 ): Promise<{ id: string; clientId: string }> {
   const item = await checklistRepo.getChecklistItemOwnership(practiceId, itemId);
-  if (!item) throw new Error('Unauthorised');
-  if (clientId && item.clientId !== clientId) throw new Error('Unauthorised');
+  if (!item) throw new ServiceError('Unauthorised');
+  if (clientId && item.clientId !== clientId) throw new ServiceError('Unauthorised');
   return item;
 }
 
