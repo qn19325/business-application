@@ -1,4 +1,4 @@
-const PRACTICE_ID = '5af61e07-68f1-47f6-b260-acbdc83539a1';
+const PRACTICE_ID = 'd47cc867-7ce8-4c60-af87-e9cf3ea7487c';
 
 export async function getCurrentPracticeId(): Promise<string> {
   return PRACTICE_ID;
