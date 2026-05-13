@@ -11,9 +11,9 @@ export default function AddClientModal() {
     <div>
       <button
         onClick={() => setIsOpen(true)}
-        className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+        className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-extrabold text-white hover:bg-indigo-700"
       >
-        Add Client
+        + New Client
       </button>
       <Modal title="Add Client" isOpen={isOpen} onClose={() => setIsOpen(false)}>
         {/* Conditional render remounts AddClientForm on open, resetting useActionState */}

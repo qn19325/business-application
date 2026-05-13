@@ -20,7 +20,7 @@ interface StatusBadgeProps {
 export default function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <div
-      className={`flex rounded px-1.5 py-0.5 text-xs font-semibold ${statusDisplay[status].textColor} ${statusDisplay[status].bgColor}`}
+      className={`flex h-fit w-fit rounded px-1.5 py-0.5 text-xs font-semibold ${statusDisplay[status].textColor} ${statusDisplay[status].bgColor}`}
     >
       <ColorDot color={statusDisplay[status].dotColor} className="my-auto mr-1" />
       <div>{statusDisplay[status].label}</div>

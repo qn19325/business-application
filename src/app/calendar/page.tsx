@@ -5,6 +5,7 @@ import { getCurrentPracticeId } from '@/infra/auth';
 import Link from 'next/link';
 import { formatDayOfWeek, formatDayNumber } from '@/logic/calendar';
 import { deadlineSubLine, getDeadlineEntries, groupDeadlinesByMonth } from '@/logic/deadlines';
+import Chevron from '@/components/Chevron';
 
 export default async function Page() {
   const practiceId = await getCurrentPracticeId();
@@ -49,6 +50,7 @@ export default async function Page() {
                   <RegimeBadge regime={entry.regime} />
                   <StatusBadge status={entry.status} />
                 </div>
+                <Chevron />
               </Link>
             ))}
           </div>
