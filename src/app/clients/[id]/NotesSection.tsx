@@ -34,12 +34,10 @@ export default function NotesSection(props: NotesSectionProps) {
   }
 
   return (
-    <div className="mt-8">
-      <div className="border-b border-slate-200 pb-2 text-xs font-medium text-slate-400 uppercase">
-        Notes
-      </div>
+    <div className="flex flex-col gap-2">
+      <div className="pb-2 text-sm font-bold text-slate-400 uppercase">Notes</div>
       <textarea
-        className="mt-3 w-full text-sm text-slate-700"
+        className="w-full rounded-md border-2 border-slate-200 bg-white p-2 text-sm font-medium text-slate-700"
         rows={4}
         value={notes}
         placeholder="No notes yet."
@@ -49,7 +47,7 @@ export default function NotesSection(props: NotesSectionProps) {
         <button
           onClick={handleSave}
           disabled={savingState.phase === 'saving'}
-          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-extrabold text-white hover:bg-indigo-700"
         >
           Save
         </button>

@@ -16,17 +16,27 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   return (
-    <>
-      <div className="mb-6 flex items-center justify-between">
-        <div className="text-2xl font-semibold text-slate-900">
-          {client.firstName} {client.lastName}
+    <div className="flex flex-col gap-8">
+      <div className="flex justify-between">
+        <div className="flex flex-col">
+          <div className="mb-4 text-2xl font-bold text-slate-900">
+            {client.firstName} {client.lastName}
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-slate-400">Contact</div>
+            {client.phoneNumber && (
+              <div className="text-sm font-semibold text-slate-900">{client.phoneNumber}</div>
+            )}
+            {client.email && (
+              <div className="text-sm font-semibold text-slate-900">{client.email}</div>
+            )}
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-slate-400">NI Number</div>
+            <div className="font-mono text-sm font-semibold text-slate-900">{client.niNumber}</div>
+          </div>
         </div>
-        <div className="flex items-center gap-4 text-sm text-slate-400">
-          {client.phoneNumber && <span>{client.phoneNumber}</span>}
-          {client.email && <span>{client.email}</span>}
-          <span className="font-mono">{client.niNumber}</span>
-        </div>
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex justify-between gap-2 align-top">
           <EditClientModal
             id={client.id}
             niNumber={client.niNumber}
@@ -38,22 +48,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           <AddTaxReturnModal clientId={client.id} existingTaxReturns={client.taxReturns} />
         </div>
       </div>
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-slate-200 text-left text-xs font-medium tracking-wide text-slate-400 uppercase">
-            <th className="pr-5 pb-2">Deadline</th>
-            <th className="pr-5 pb-2">Status</th>
-            <th className="pr-5 pb-2">Tax Year</th>
-            <th className="pr-5 pb-2">Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          {client.taxReturns.map((taxReturn) => {
-            return <TaxReturnCard key={taxReturn.id} clientId={client.id} taxReturn={taxReturn} />;
-          })}
-        </tbody>
-      </table>
+      {client.taxReturns.map((taxReturn) => {
+        return <TaxReturnCard key={taxReturn.id} clientId={client.id} taxReturn={taxReturn} />;
+      })}
       <NotesSection clientId={client.id} currentNotes={client.notes} />
-    </>
+    </div>
   );
 }
