@@ -10,21 +10,25 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is not set');
 }
 
-const demoDatabaseUrl = process.env.DATABASE_URL_DEMO;
-if (!demoDatabaseUrl) {
-  throw new Error('DATABASE_URL_DEMO is not set');
-}
-
 const sqlConnection = postgres(databaseUrl);
 export const db = drizzle({ client: sqlConnection, schema, casing: 'snake_case' });
 
-const sqlConnectionDemo = postgres(demoDatabaseUrl);
-export const dbDemo = drizzle({ client: sqlConnectionDemo, schema, casing: 'snake_case' });
+let dbDemo: typeof db | undefined;
 
 export async function getCurrentDb() {
   const headerList = await headers();
   const isDemo = headerList.get(DEMO_HEADER) === 'true';
-  return isDemo ? dbDemo : db;
+
+  if (isDemo) {
+    if (!dbDemo) {
+      const demoDatabaseUrl = process.env.DATABASE_URL_DEMO;
+      if (!demoDatabaseUrl) throw new Error('DATABASE_URL_DEMO is not set');
+      dbDemo = drizzle({ client: postgres(demoDatabaseUrl), schema, casing: 'snake_case' });
+    }
+    return dbDemo;
+  }
+
+  return db;
 }
 
 export type Db = typeof db;
