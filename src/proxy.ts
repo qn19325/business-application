@@ -7,7 +7,7 @@ const isPublicRoute = createRouteMatcher(['/sign-in(.*)']);
 
 export default clerkMiddleware(async (auth, request) => {
   const host = request.headers.get('host');
-  const isDemo = host === 'demo.instructr.uk';
+  const isDemo = host === 'demo.instructr.uk' || process.env.DEMO_MODE === 'true';
 
   if (isDemo) {
     const requestHeaders = new Headers(request.headers);
@@ -15,7 +15,9 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
-  if (!isPublicRoute(request)) await auth.protect();
+  if (process.env.NODE_ENV !== 'development') {
+    if (!isPublicRoute(request)) await auth.protect();
+  }
 });
 
 export const config = {
