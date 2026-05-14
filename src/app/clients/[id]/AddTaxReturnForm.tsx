@@ -5,7 +5,7 @@ import { useState } from 'react';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';
 import FormError from '@/components/FormError';
-import { inputClass, labelClass } from '@/components/formStyles';
+import { inputClass, labelClass } from '@/config/formStyles';
 import { useActionForm } from '@/hooks/useActionForm';
 import { currentTaxYear } from '@/logic/tax-year';
 import { Regime } from '@/types/clients';

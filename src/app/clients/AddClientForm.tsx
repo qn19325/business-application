@@ -4,7 +4,7 @@ import ClientFields from '@/components/ClientFields';
 import FieldError from '@/components/FieldError';
 import FormActions from '@/components/FormActions';
 import FormError from '@/components/FormError';
-import { labelClass } from '@/components/formStyles';
+import { labelClass } from '@/config/formStyles';
 import { useActionForm } from '@/hooks/useActionForm';
 import { Regime } from '@/types/clients';
 

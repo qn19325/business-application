@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { headers } from 'next/headers';
 import postgres from 'postgres';
 
+import { DEMO_HEADER } from '@/config/demo';
 import * as schema from '@/db/schema';
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -22,7 +23,7 @@ export const dbDemo = drizzle({ client: sqlConnectionDemo, schema, casing: 'snak
 
 export async function getCurrentDb() {
   const headerList = await headers();
-  const isDemo = headerList.get('x-demo-mode') === 'true';
+  const isDemo = headerList.get(DEMO_HEADER) === 'true';
   return isDemo ? dbDemo : db;
 }
 
