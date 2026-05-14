@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { cols } from '@/app/(app)/clients/clientsGrid';
+import Avatar from '@/components/Avatar';
 import Chevron from '@/components/Chevron';
 import RegimeBadge from '@/components/RegimeBadge';
 import StatusBadge from '@/components/StatusBadge';
@@ -28,8 +29,8 @@ export default function ClientListItem(props: ClientListItemProps) {
       href={`/clients/${props.client.id}`}
       className={`${cols} items-center border-b border-slate-200 bg-white py-3 transition-colors hover:bg-slate-100`}
     >
-      <div className="flex gap-2">
-        <div className={`h-5 w-5 rounded-full bg-blue-300`} />
+      <div className="flex items-center gap-2">
+        <Avatar firstName={props.client.firstName} lastName={props.client.lastName} />
         <div className="text-sm font-medium text-slate-900">
           {props.client.firstName} {props.client.lastName}
         </div>
