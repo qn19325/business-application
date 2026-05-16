@@ -2,26 +2,15 @@
 
 ## Current State
 
-**Active phase: Pre-deploy — CV production deploy to instructr.uk**
+**Active phase: Post-deploy. CV deploy to `instructr.uk` live (2026-05-14).**
 **Phase D complete. All 5 workflow features live — add tax return, edit client, notes, checklist toggle, status change.**
 **Phase E prerequisite: at least one real return cycle with Lara before starting AI work. See `wiki/topics/application-build-phases.md`.**
-**Deploy decision:** CV deploy brought forward from Phase 2 start. Single Vercel deployment, two domains (`instructr.uk` / `demo.instructr.uk`), host-header detection in middleware. Demo is fully interactive — writes hit a separate Neon branch, data resets manually. See `wiki/decisions/auth-and-demo-architecture.md`.
+**Deploy:** Single Vercel deployment, two domains (`instructr.uk` / `demo.instructr.uk`), host-header detection in `src/proxy.ts`. Demo is fully interactive — writes hit a separate Neon branch, data resets manually. See `wiki/decisions/auth-and-demo-architecture.md`.
 
-### Pre-deploy queue (in order)
+### Next queue
 
-1. ✅ **Layered refactor** — four-tier architecture complete (commit 91907f4).
-2. ✅ **UI mockup alignment** — align UI to design mockups before public visibility.
-3. ✅ **Modal + Form abstraction** — render-prop `Modal` (no `isOpen`), `useActionForm`, `ClientFields` shared, `onClose` normalised everywhere (commits 7ed3772, 8e8924c).
-4. ✅ **Secrets audit** — clean: no real client data, NI numbers, or hardcoded secrets in committed codebase (2026-05-14).
-5. **Deploy** — ✅ Clerk setup → ✅ Neon demo branch → ✅ `getCurrentDb()` + `db` param refactor → ✅ **proxy** (`src/proxy.ts`, Next.js 16 renamed `middleware.ts` → `proxy.ts`) → sign-in page → demo banner → Vercel env vars + domain alias → `db:push` → seed demo branch.
-
-### Post-deploy queue
-
-- Codebase-review polish — remaining items in `wiki/sessions/2026-05-11-codebase-review-react-simplicity.md`.
-- Test suite — high CV value; add after first deploy.
-- Phase E (AI preparation layer) — after deploy + at least one real return cycle with Lara.
-
-Note: `mostRecentReturn` bug (was item 1) — fixed in commit 10a221c.
+- Test suite — high CV value; add after first deploy. See `/wiki/decisions/testing-strategy.md`.
+- Phase E (AI preparation layer) — after at least one real return cycle with Lara.
 
 ---
 
