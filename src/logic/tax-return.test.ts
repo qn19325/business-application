@@ -58,27 +58,23 @@ describe('isFiled', () => {
     });
   });
   describe('status is not filed', () => {
-    it('returns false for not_started', () => {
-      expect(isFiled(makeReturn({ status: Status.not_started }))).toBe(false);
-    });
-    it('returns false for in_progress', () => {
-      expect(isFiled(makeReturn({ status: Status.in_progress }))).toBe(false);
-    });
-    it('returns false for awaiting_client', () => {
-      expect(isFiled(makeReturn({ status: Status.awaiting_client }))).toBe(false);
-    });
-    it('returns false for ready_to_file', () => {
-      expect(isFiled(makeReturn({ status: Status.ready_to_file }))).toBe(false);
+    const unfiledStatuses = Object.values(Status).filter((s) => s !== Status.filed);
+    it.each(unfiledStatuses)('returns false for %s', (status) => {
+      expect(isFiled(makeReturn({ status }))).toBe(false);
     });
   });
 });
 
 describe('regimeLabel', () => {
-  it('returns "SA100" for sa100', () => {
-    expect(regimeLabel(makeReturn({ regime: Regime.sa100 }))).toBe('SA100');
+  describe('sa100 regime', () => {
+    it('returns "SA100"', () => {
+      expect(regimeLabel(makeReturn({ regime: Regime.sa100 }))).toBe('SA100');
+    });
   });
-  it('returns "MTD" for mtd', () => {
-    expect(regimeLabel(makeMtdReturn({ regime: Regime.mtd }))).toBe('MTD');
+  describe('mtd regime', () => {
+    it('returns "MTD"', () => {
+      expect(regimeLabel(makeMtdReturn({ regime: Regime.mtd }))).toBe('MTD');
+    });
   });
 });
 
@@ -103,14 +99,18 @@ describe('firstUnfiledReturn', () => {
 });
 
 describe('formatDeadline', () => {
-  it('formats date as dd/mm/yyyy in en-GB', () => {
-    expect(formatDeadline(new Date('2025-03-05'))).toBe('05/03/2025');
+  describe('standard date', () => {
+    it('formats as dd/mm/yyyy in en-GB', () => {
+      expect(formatDeadline(new Date('2025-03-05'))).toBe('05/03/2025');
+    });
   });
 });
 
 describe('formatDate', () => {
-  it('formats date as day dd mon yyyy in en-GB', () => {
-    expect(formatDate(new Date('2025-03-05'))).toBe('Wednesday, 05 Mar 2025');
+  describe('standard date', () => {
+    it('formats as weekday dd Mon yyyy in en-GB', () => {
+      expect(formatDate(new Date('2025-03-05'))).toBe('Wednesday, 05 Mar 2025');
+    });
   });
 });
 
@@ -127,16 +127,15 @@ describe('mostRecentReturn', () => {
     });
   });
   describe('multiple elements', () => {
-    it('returns the highest taxYear when ordered ascending', () => {
-      const earlier = makeReturn({ id: '1', taxYear: 2025 });
-      const later = makeReturn({ id: '2', taxYear: 2026 });
-      expect(mostRecentReturn([earlier, later])).toBe(later);
-    });
-    it('returns the highest taxYear when ordered descending', () => {
-      const later = makeReturn({ id: '1', taxYear: 2026 });
-      const earlier = makeReturn({ id: '2', taxYear: 2025 });
-      expect(mostRecentReturn([later, earlier])).toBe(later);
-    });
+    it.each(['ascending', 'descending'] as const)(
+      'returns the highest taxYear when ordered %s',
+      (order) => {
+        const earlier = makeReturn({ id: '1', taxYear: 2025 });
+        const later = makeReturn({ id: '2', taxYear: 2026 });
+        const input = order === 'ascending' ? [earlier, later] : [later, earlier];
+        expect(mostRecentReturn(input)).toBe(later);
+      },
+    );
   });
 });
 
@@ -162,19 +161,11 @@ describe('numberOfClientsWithUnfiled', () => {
 });
 
 describe('daysTillNextDeadline', () => {
-  describe('future deadline — returns positive days', () => {
-    it('returns 1 for a deadline exactly one day away', () => {
-      expect(daysTillNextDeadline(new Date('2025-03-06T12:00:00Z'), new Date('2025-03-05T12:00:00Z'))).toBe(1);
-    });
-  });
-  describe('past deadline — returns negative days', () => {
-    it('returns -1 for a deadline exactly one day past', () => {
-      expect(daysTillNextDeadline(new Date('2025-03-04T12:00:00Z'), new Date('2025-03-05T12:00:00Z'))).toBe(-1);
-    });
-  });
-  describe('boundary — deadline is today', () => {
-    it('returns 0 for the same moment', () => {
-      expect(daysTillNextDeadline(new Date('2025-03-05T12:00:00Z'), new Date('2025-03-05T12:00:00Z'))).toBe(0);
-    });
+  it.each([
+    { label: 'one day in the future', deadline: '2025-03-06T12:00:00Z', now: '2025-03-05T12:00:00Z', expected: 1 },
+    { label: 'one day in the past', deadline: '2025-03-04T12:00:00Z', now: '2025-03-05T12:00:00Z', expected: -1 },
+    { label: 'the same moment', deadline: '2025-03-05T12:00:00Z', now: '2025-03-05T12:00:00Z', expected: 0 },
+  ])('returns $expected when the deadline is $label', ({ deadline, now, expected }) => {
+    expect(daysTillNextDeadline(new Date(deadline), new Date(now))).toBe(expected);
   });
 });
