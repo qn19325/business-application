@@ -101,7 +101,7 @@ describe('firstUnfiledReturn', () => {
 describe('formatDeadline', () => {
   describe('standard date', () => {
     it('formats as dd/mm/yyyy in en-GB', () => {
-      expect(formatDeadline(new Date('2025-03-05'))).toBe('05/03/2025');
+      expect(formatDeadline(new Date(Date.UTC(2025, 2, 5)))).toEqual('05/03/2025');
     });
   });
 });
@@ -109,7 +109,7 @@ describe('formatDeadline', () => {
 describe('formatDate', () => {
   describe('standard date', () => {
     it('formats as weekday dd Mon yyyy in en-GB', () => {
-      expect(formatDate(new Date('2025-03-05'))).toBe('Wednesday, 05 Mar 2025');
+      expect(formatDate(new Date(Date.UTC(2025, 2, 5)))).toEqual('Wednesday, 05 Mar 2025');
     });
   });
 });
@@ -153,8 +153,14 @@ describe('numberOfClientsWithUnfiled', () => {
   });
   describe('some clients have unfiled returns', () => {
     it('returns the count of clients with at least one unfiled return', () => {
-      const withUnfiled = makeClient({ id: '1', taxReturns: [makeReturn({ status: Status.not_started })] });
-      const withAllFiled = makeClient({ id: '2', taxReturns: [makeReturn({ status: Status.filed })] });
+      const withUnfiled = makeClient({
+        id: '1',
+        taxReturns: [makeReturn({ status: Status.not_started })],
+      });
+      const withAllFiled = makeClient({
+        id: '2',
+        taxReturns: [makeReturn({ status: Status.filed })],
+      });
       expect(numberOfClientsWithUnfiled([withUnfiled, withAllFiled])).toBe(1);
     });
   });
@@ -162,9 +168,24 @@ describe('numberOfClientsWithUnfiled', () => {
 
 describe('daysTillNextDeadline', () => {
   it.each([
-    { label: 'one day in the future', deadline: '2025-03-06T12:00:00Z', now: '2025-03-05T12:00:00Z', expected: 1 },
-    { label: 'one day in the past', deadline: '2025-03-04T12:00:00Z', now: '2025-03-05T12:00:00Z', expected: -1 },
-    { label: 'the same moment', deadline: '2025-03-05T12:00:00Z', now: '2025-03-05T12:00:00Z', expected: 0 },
+    {
+      label: 'one day in the future',
+      deadline: '2025-03-06T12:00:00Z',
+      now: '2025-03-05T12:00:00Z',
+      expected: 1,
+    },
+    {
+      label: 'one day in the past',
+      deadline: '2025-03-04T12:00:00Z',
+      now: '2025-03-05T12:00:00Z',
+      expected: -1,
+    },
+    {
+      label: 'the same moment',
+      deadline: '2025-03-05T12:00:00Z',
+      now: '2025-03-05T12:00:00Z',
+      expected: 0,
+    },
   ])('returns $expected when the deadline is $label', ({ deadline, now, expected }) => {
     expect(daysTillNextDeadline(new Date(deadline), new Date(now))).toBe(expected);
   });

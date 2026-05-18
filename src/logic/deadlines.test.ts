@@ -8,6 +8,7 @@ import {
   deadlineSubLine,
   getDeadlineEntries,
   groupDeadlinesByMonth,
+  mtdPeriod,
   mtdSubmissionDeadlines,
   nextDeadline,
   sa100Deadline,
@@ -212,6 +213,27 @@ describe('getDeadlineEntries', () => {
       ],
     });
     expect(getDeadlineEntries([client]).map((e) => e.id)).toEqual(['return-2024', 'return-2025']);
+  });
+});
+
+describe('mtdPeriod', () => {
+  it('should return the correct string for q_1', () => {
+    expect(mtdPeriod[SubmissionType.q_1](2024)).toBe('6 Apr - 5 Jul 2024');
+  });
+  it('should return the correct string for q_2', () => {
+    expect(mtdPeriod[SubmissionType.q_2](2024)).toBe('6 Jul - 5 Oct 2024');
+  });
+  it('should return the correct string for q_3', () => {
+    expect(mtdPeriod[SubmissionType.q_3](2024)).toBe('6 Oct 2024 - 5 Jan 2025');
+  });
+  it('should return the correct string for q_4', () => {
+    expect(mtdPeriod[SubmissionType.q_4](2024)).toBe('6 Jan - 5 Apr 2025');
+  });
+  it('should return the correct string for eops', () => {
+    expect(mtdPeriod[SubmissionType.eops](2024)).toBe('2024-2025');
+  });
+  it('should return the correct string for final_declaration', () => {
+    expect(mtdPeriod[SubmissionType.final_declaration](2024)).toBe('2024-2025');
   });
 });
 
