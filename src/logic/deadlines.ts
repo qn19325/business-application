@@ -13,15 +13,33 @@ export function sa100Deadline(taxYear: number): Date {
   return new Date(Date.UTC(taxYear + 1, 0, 31));
 }
 
-export function mtdSubmissionDeadlines(
-  taxYear: number,
-): { submissionType: SubmissionType; deadline: Date }[] {
-  return [
-    { submissionType: SubmissionType.q_1, deadline: new Date(Date.UTC(taxYear, 7, 7)) },
-    { submissionType: SubmissionType.q_2, deadline: new Date(Date.UTC(taxYear, 10, 7)) },
-    { submissionType: SubmissionType.q_3, deadline: new Date(Date.UTC(taxYear + 1, 1, 7)) },
-    { submissionType: SubmissionType.q_4, deadline: new Date(Date.UTC(taxYear + 1, 4, 7)) },
-  ];
+type SubmissionTypeQuarters = Exclude<SubmissionType, 'eops' | 'final_declaration'>;
+const mtdSubmissionDeadlineValues: Record<
+  SubmissionTypeQuarters,
+  { monthIdx: number; day: number; nextYear: boolean }
+> = {
+  q_1: { monthIdx: 7, day: 7, nextYear: false },
+  q_2: { monthIdx: 10, day: 7, nextYear: false },
+  q_3: { monthIdx: 1, day: 7, nextYear: true },
+  q_4: { monthIdx: 4, day: 7, nextYear: true },
+};
+
+function isQuarterlyType(s: SubmissionType): s is SubmissionTypeQuarters {
+  return s in mtdSubmissionDeadlineValues;
+}
+
+function mtdDeadlineDate(submissionType: SubmissionTypeQuarters, taxYear: number): Date {
+  const { monthIdx, day, nextYear } = mtdSubmissionDeadlineValues[submissionType];
+  return new Date(Date.UTC(taxYear + (nextYear ? 1 : 0), monthIdx, day));
+}
+
+export function mtdSubmissionDeadlines(taxYear: number): {
+  submissionType: SubmissionTypeQuarters;
+  deadline: Date;
+}[] {
+  return mtdSubmissionTypes
+    .filter(isQuarterlyType)
+    .map((submissionType) => ({ submissionType, deadline: mtdDeadlineDate(submissionType, taxYear) }));
 }
 
 export function nextDeadline(taxReturn: TaxReturn): Date | null {
@@ -29,34 +47,25 @@ export function nextDeadline(taxReturn: TaxReturn): Date | null {
     return taxReturn.status !== Status.filed ? sa100Deadline(taxReturn.taxYear) : null;
   }
   const unfiledSubmission = firstUnfiledSubmission(taxReturn.submissions);
-  if (!unfiledSubmission) return null;
-  const deadlines = mtdSubmissionDeadlines(taxReturn.taxYear);
-  const match = deadlines.find((d) => d.submissionType === unfiledSubmission.submissionType);
-  if (!match) throw new Error(`No deadline for submissionType ${unfiledSubmission.submissionType}`);
-  return match.deadline;
+  if (!unfiledSubmission || !isQuarterlyType(unfiledSubmission.submissionType)) return null;
+  return mtdDeadlineDate(unfiledSubmission.submissionType, taxReturn.taxYear);
 }
 
 export function getDeadlineEntries(clients: Client[]): DeadlineEntry[] {
   const deadlineEntries: DeadlineEntry[] = clients.flatMap((client) => {
     return client.taxReturns.flatMap((taxReturn): DeadlineEntry[] => {
       if (taxReturn.regime === Regime.mtd) {
-        const submissionDeadlines = mtdSubmissionDeadlines(taxReturn.taxYear);
         return taxReturn.submissions
-          .filter((s) => mtdSubmissionTypes.includes(s.submissionType))
+          .filter((s): s is MTDSubmission & { submissionType: SubmissionTypeQuarters } =>
+            isQuarterlyType(s.submissionType),
+          )
           .map((submission) => {
-            const submissionDeadline = submissionDeadlines.find(
-              (deadline) => deadline.submissionType === submission.submissionType,
-            );
-            if (!submissionDeadline) {
-              throw new Error(`No deadline for submissionType ${submission.submissionType}`);
-            }
-
             return {
               name: `${client.firstName} ${client.lastName}`,
               id: submission.id,
               clientId: client.id,
               status: submission.status,
-              deadline: submissionDeadline.deadline,
+              deadline: mtdDeadlineDate(submission.submissionType, taxReturn.taxYear),
               taxYear: taxReturn.taxYear,
               regime: taxReturn.regime,
               submissionType: submission.submissionType,
