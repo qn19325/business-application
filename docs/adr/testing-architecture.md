@@ -1,17 +1,18 @@
 ---
 type: decision
-title: Testing Architecture — Vitest, co-located unit tests, pure `logic/` tier
+title: Testing Architecture — Vitest, co-located unit tests, layered test strategy
 date: 2026-05-16
+updated: 2026-05-18
 status: decided
 domain: product
-tags: [testing, architecture, logic, phase-d, post-deploy]
+tags: [testing, architecture, logic, repo, service, ci, phase-d, post-deploy]
 ---
 
-# Testing Architecture — Vitest, co-located unit tests, pure `logic/` tier
+# Testing Architecture — Vitest, co-located unit tests, layered test strategy
 
 ## Decision
 
-The test suite is added in layers that mirror [[four-tier-layered-architecture]]. The first layer to be tested is `logic/`, and the rules in this ADR govern that layer specifically. `repo/`, `service/`, and end-to-end testing are deferred to separate ADRs once the `logic/` suite is in place.
+The test suite is added in layers that mirror [[four-tier-layered-architecture]]. Rules for `logic/` were decided first (2026-05-16); rules for `repo/`, `service/`, and CI were decided 2026-05-18 once `logic/` reached 100% coverage.
 
 For the `logic/` tier:
 
@@ -177,15 +178,52 @@ The rule the original draft was reaching for — "no shared fixtures, no helpers
 3. No test in `logic/` imports from `repo/`, `service/`, `infra/`, or uses a mock.
 4. Coverage is measured (`npm run test:coverage`) and used as an alarm for missed files, not as a gate.
 
-After `logic/` is done, the question of testing `repo/` and `service/` opens — separate ADR, separate session. That session decides test DB strategy (Neon branch vs local Postgres vs transaction rollback), Clerk handling, and how to fake R2.
+After `logic/` is done, the question of testing `repo/` and `service/` opens — decided 2026-05-18, rules below.
 
 ## What This Gates
 
 - Phase E (AI preparation) can rely on `logic/` invariants being enforced by tests before any AI-generated change touches the domain rules.
-- The `repo/` / `service/` testing ADR can be written with the `logic/` suite as a reference point.
 - CV value accrues as a by-product: the test suite is visible, the structure is principled, and the rationale is documented.
 
 ## Open Questions
 
-- Is `sa100Deadline(taxYear)` off by one? See [[testing-strategy]] for the finding. First test written against `deadlines.ts` should pin this down.
-- Component-level testing (React Testing Library) sits between `logic/` and E2E. Not in scope here. Decided in a later ADR once `logic/` and at least one of `repo/`/`service/` are tested.
+- Component-level testing (React Testing Library) sits between `logic/` and E2E. Not in scope here. Decided in a later ADR once `repo/`/`service/` are tested.
+
+---
+
+## `repo/` and `service/` testing (decided 2026-05-18)
+
+### `repo/` — integration tests against a local Postgres database
+
+- **Database:** local Postgres. Not Neon branch (network latency, external dependency), not transaction rollback (Neon's serverless driver lacks savepoint support, which breaks when `withTransaction` is nested inside a test-level transaction).
+- **Reset strategy:** `DELETE FROM` all tables in dependency order (children before parents) in a `beforeEach`. Not `TRUNCATE` — Drizzle makes `DELETE` easier. A shared `clearDb(db)` helper in the test file handles ordering.
+- **Connection config:** `DATABASE_URL_TEST` in `.env.test` (gitignored). Vitest loads `.env.test` automatically. Keeps test DB config separate from dev DB config — prevents accidental cross-contamination.
+- **Schema setup:** `npm run db:push` with `DATABASE_URL_TEST` set, run once before the suite (or as a CI step). No separate migration script.
+- **Clerk handling:** not needed. `practiceId` is an explicit parameter on every repo function — no auth context to mock.
+- **Location:** co-located, same as `logic/`. `src/repo/clients.ts` → `src/repo/clients.test.ts`.
+
+### `service/` — unit tests with mocked repos and mocked R2
+
+- **Repo faking:** `vi.mock('@/repo/clients')`, `vi.mock('@/repo/documents')`, etc. Each test configures return values with `vi.mocked(fn).mockResolvedValue(...)`. No injection refactor — service function signatures stay as-is; the architecture was designed for this, and refactoring call sites to inject repos would be changing code to fit tests rather than the other way around.
+- **R2 faking:** `vi.mock('@/infra/r2')` for `getUploadUrl`, `getDownloadUrl`, `deleteObject`.
+- **Which functions to test:** test service functions where the service does real work — orchestration, guard checks, transaction coordination. Skip pure pass-throughs (single repo call, no logic). Specifically:
+  - `service/clients.ts`: test `insertClient`, `insertTaxReturn`, `markItemReceived`, `markItemOutstanding`. Skip `changeTaxReturnStatus`, `updateClientNotes`.
+  - `service/documents.ts`: test `completeUpload`, `drainPendingDeletes`. `prepareUpload` and `removeDocument` are worth testing for their ownership guard + R2 interaction.
+- **Location:** co-located. `src/service/clients.ts` → `src/service/clients.test.ts`.
+
+### CI — GitHub Actions
+
+- **When added:** now. `logic/` at 100% coverage is past the "~10 tests across 3 files" threshold set in the original ADR.
+- **Trigger:** on push to `main` and on pull request.
+- **Postgres in CI:** GitHub Actions `services:` block spins up a Postgres container. CI workflow sets `DATABASE_URL_TEST` to the container connection string and runs `npm run db:push` before `npm test`.
+- **Suite in CI:** deterministic only — `logic/`, `repo/`, `service/`. LLM eval tests (Phase E, Ollama-dependent) are local-only and never run in CI. They live under a separate `npm run test:eval` command with a distinct Vitest config `include` pattern.
+
+### Phase E eval tests — local only
+
+Vitest eval tests for the AI pipeline (synthetic docs, HMRC samples, correction-capture regressions) are not runtime validators — they are developer-time regression tests that run when pipeline code changes. They need Ollama running locally and are non-deterministic across runs even at `temperature: 0`.
+
+These tests never run in CI. They live under `src/ai/**/*.eval.ts` (or similar pattern) and are excluded from the main Vitest `include` glob. A separate `npm run test:eval` command includes them explicitly.
+
+Runtime validation of LLM output shape is handled by arktype schemas inside `generateObject` calls — this happens automatically on every pipeline run, not in the test suite.
+
+**LLM-as-judge** (a second LLM call reviewing pipeline output before it reaches Lara) is an open option flagged in [[phase-e-implementation]]. Not in scope until Lara's first real return cycle surfaces which errors the heuristic review queue misses.

@@ -1,5 +1,5 @@
 {
-  "id": "87092865-dd76-454e-8ad5-5d8dd33e2f11",
+  "id": "f7771016-e738-4402-9cef-8584e09b9e9f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -12,6 +12,13 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "practice_id": {
+          "name": "practice_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": true
         },
         "tax_return_id": {
@@ -22,7 +29,8 @@
         },
         "document_type": {
           "name": "document_type",
-          "type": "text",
+          "type": "document_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -32,22 +40,69 @@
           "primaryKey": false,
           "notNull": true
         },
-        "status": {
-          "name": "status",
-          "type": "text",
+        "done": {
+          "name": "done",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "checklist_item_practice_id_idx": {
+          "name": "checklist_item_practice_id_idx",
+          "columns": [
+            {
+              "expression": "practice_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
+        "checklist_item_practice_id_practice_id_fk": {
+          "name": "checklist_item_practice_id_practice_id_fk",
+          "tableFrom": "checklist_item",
+          "tableTo": "practice",
+          "columnsFrom": [
+            "practice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
         "checklist_item_tax_return_id_tax_return_id_fk": {
           "name": "checklist_item_tax_return_id_tax_return_id_fk",
           "tableFrom": "checklist_item",
           "tableTo": "tax_return",
-          "columnsFrom": ["tax_return_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "tax_return_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -65,7 +120,8 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "practice_id": {
           "name": "practice_id",
@@ -95,29 +151,199 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "phone_number": {
           "name": "phone_number",
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "client_practice_id_idx": {
+          "name": "client_practice_id_idx",
+          "columns": [
+            {
+              "expression": "practice_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "client_practice_id_practice_id_fk": {
           "name": "client_practice_id_practice_id_fk",
           "tableFrom": "client",
           "tableTo": "practice",
-          "columnsFrom": ["practice_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "practice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "client_practiceId_niNumber_unique": {
+          "name": "client_practiceId_niNumber_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "practice_id",
+            "ni_number"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.document": {
+      "name": "document",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "practice_id": {
+          "name": "practice_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "checklist_item_id": {
+          "name": "checklist_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "r2_key": {
+          "name": "r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_file_name": {
+          "name": "original_file_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "document_practice_id_idx": {
+          "name": "document_practice_id_idx",
+          "columns": [
+            {
+              "expression": "practice_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "document_practice_id_practice_id_fk": {
+          "name": "document_practice_id_practice_id_fk",
+          "tableFrom": "document",
+          "tableTo": "practice",
+          "columnsFrom": [
+            "practice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "document_checklist_item_id_checklist_item_id_fk": {
+          "name": "document_checklist_item_id_checklist_item_id_fk",
+          "tableFrom": "document",
+          "tableTo": "checklist_item",
+          "columnsFrom": [
+            "checklist_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "document_checklistItemId_unique": {
+          "name": "document_checklistItemId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "checklist_item_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -130,6 +356,13 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "practice_id": {
+          "name": "practice_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": true
         },
         "tax_return_id": {
@@ -140,37 +373,89 @@
         },
         "submission_type": {
           "name": "submission_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "deadline": {
-          "name": "deadline",
-          "type": "date",
+          "type": "submission_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "status": {
           "name": "status",
-          "type": "text",
+          "type": "mtd_submission_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "mtd_submission_practice_id_idx": {
+          "name": "mtd_submission_practice_id_idx",
+          "columns": [
+            {
+              "expression": "practice_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
+        "mtd_submission_practice_id_practice_id_fk": {
+          "name": "mtd_submission_practice_id_practice_id_fk",
+          "tableFrom": "mtd_submission",
+          "tableTo": "practice",
+          "columnsFrom": [
+            "practice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
         "mtd_submission_tax_return_id_tax_return_id_fk": {
           "name": "mtd_submission_tax_return_id_tax_return_id_fk",
           "tableFrom": "mtd_submission",
           "tableTo": "tax_return",
-          "columnsFrom": ["tax_return_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "tax_return_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "mtd_submission_taxReturnId_submissionType_unique": {
+          "name": "mtd_submission_taxReturnId_submissionType_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tax_return_id",
+            "submission_type"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -183,19 +468,109 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "clerk_user_id": {
+          "name": "clerk_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "practice_clerkUserId_unique": {
+          "name": "practice_clerkUserId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clerk_user_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.r2_pending_delete": {
+      "name": "r2_pending_delete",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "practice_id": {
+          "name": "practice_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "r2_key": {
+          "name": "r2_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "r2_pending_delete_practice_id_practice_id_fk": {
+          "name": "r2_pending_delete_practice_id_practice_id_fk",
+          "tableFrom": "r2_pending_delete",
+          "tableTo": "practice",
+          "columnsFrom": [
+            "practice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "r2_pending_delete_r2Key_unique": {
+          "name": "r2_pending_delete_r2Key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "r2_key"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -208,7 +583,8 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "practice_id": {
           "name": "practice_id",
@@ -230,46 +606,166 @@
         },
         "regime": {
           "name": "regime",
-          "type": "text",
+          "type": "regime",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "status": {
           "name": "status",
-          "type": "text",
+          "type": "status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved_by": {
+          "name": "approved_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "tax_return_practice_id_idx": {
+          "name": "tax_return_practice_id_idx",
+          "columns": [
+            {
+              "expression": "practice_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "tax_return_practice_id_practice_id_fk": {
           "name": "tax_return_practice_id_practice_id_fk",
           "tableFrom": "tax_return",
           "tableTo": "practice",
-          "columnsFrom": ["practice_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "practice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
           "onUpdate": "no action"
         },
         "tax_return_client_id_client_id_fk": {
           "name": "tax_return_client_id_client_id_fk",
           "tableFrom": "tax_return",
           "tableTo": "client",
-          "columnsFrom": ["client_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "tax_return_clientId_taxYear_regime_unique": {
+          "name": "tax_return_clientId_taxYear_regime_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "client_id",
+            "tax_year",
+            "regime"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.document_type": {
+      "name": "document_type",
+      "schema": "public",
+      "values": [
+        "p60",
+        "p11d",
+        "bank_statements",
+        "self_employment",
+        "rental",
+        "dividends",
+        "pension",
+        "capital_gains",
+        "income",
+        "expenses",
+        "mileage_log"
+      ]
+    },
+    "public.mtd_submission_status": {
+      "name": "mtd_submission_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "submitted",
+        "overdue"
+      ]
+    },
+    "public.regime": {
+      "name": "regime",
+      "schema": "public",
+      "values": [
+        "mtd",
+        "sa100"
+      ]
+    },
+    "public.status": {
+      "name": "status",
+      "schema": "public",
+      "values": [
+        "not_started",
+        "in_progress",
+        "awaiting_client",
+        "ready_to_file",
+        "filed"
+      ]
+    },
+    "public.submission_type": {
+      "name": "submission_type",
+      "schema": "public",
+      "values": [
+        "q_1",
+        "q_2",
+        "q_3",
+        "q_4",
+        "eops",
+        "final_declaration"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

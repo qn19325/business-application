@@ -2,14 +2,17 @@
 
 ## Current State
 
-**Active phase: Post-deploy. CV deploy to `instructr.uk` live (2026-05-14).**
+**Active phase: Test suite.**
 **Phase D complete. All 5 workflow features live — add tax return, edit client, notes, checklist toggle, status change.**
 **Phase E prerequisite: at least one real return cycle with Lara before starting AI work. See `wiki/topics/application-build-phases.md`.**
 **Deploy:** Single Vercel deployment, two domains (`instructr.uk` / `demo.instructr.uk`), host-header detection in `src/proxy.ts`. Demo is fully interactive — writes hit a separate Neon branch, data resets manually. See `wiki/decisions/auth-and-demo-architecture.md`.
 
 ### Next queue
 
-- Test suite — high CV value; add after first deploy. See `/wiki/decisions/testing-strategy.md`.
+- CI (GitHub Actions) — add first. `logic/` is at 100%; CI should be live before writing more tests. Postgres service container, `db:push` step, deterministic suite only. See `docs/adr/testing-architecture.md`.
+- `repo/` tests — local Postgres, `DELETE FROM` truncate in `beforeEach`, `DATABASE_URL_TEST` in `.env.test`.
+- `service/` tests — `vi.mock` for repos and R2, skip pure pass-throughs.
+- Full strategy: `wiki/decisions/repo-service-testing-strategy.md`.
 - Phase E (AI preparation layer) — after at least one real return cycle with Lara.
 
 ---

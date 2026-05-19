@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1776594355748,
-      "tag": "0000_odd_marvex",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1776598110207,
-      "tag": "0001_huge_rictor",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1776600482407,
-      "tag": "0002_brown_the_order",
+      "when": 1779174526033,
+      "tag": "0000_thin_sleepwalker",
       "breakpoints": true
     }
   ]

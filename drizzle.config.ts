@@ -13,6 +13,7 @@ const drizzleConfig = defineConfig({
   schema: './src/db/schema.ts',
   dialect: 'postgresql',
   casing: 'snake_case',
+  out: './drizzle',
 });
 
 export default drizzleConfig;
