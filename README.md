@@ -1,6 +1,6 @@
 # Instructr
 
-Workflow management tool for UK chartered accountants to manage client tax returns — document collection, deadlines, client communication, and sign-off tracking. Built as a Phase 1 validation vehicle for Lara Warwick; Phase 2 targets B2B SaaS for UK accountancy practices.
+Workflow management tool for UK chartered accountants to manage client tax returns — document collection, deadlines, client communication, and sign-off tracking. Intention to add an AI-driven tax return preperation layer.
 
 ## Stack
 
@@ -11,20 +11,11 @@ Workflow management tool for UK chartered accountants to manage client tax retur
 | ORM          | Drizzle ORM                          |
 | Auth         | Clerk                                |
 | File storage | Cloudflare R2                        |
-| Email        | Resend + React Email                 |
 | Hosting      | Vercel                               |
 
 ## Architecture
 
 Four-tier layered architecture: `logic/` → `repo/` → `service/` → `app/`, with `infra/` as the external-systems edge. See `docs/adr/` for architectural decision records.
-
-## Local Setup
-
-1. Copy `.env.local.example` to `.env.local` and fill in values (Neon `DATABASE_URL`, Clerk keys, R2 credentials, Resend key).
-2. Install dependencies: `npm install`
-3. Push schema: `npm run db:push` (or `db:migrate` for Neon)
-4. Seed: `npm run db:seed`
-5. Start dev server: `npm run dev`
 
 ## Commands
 
