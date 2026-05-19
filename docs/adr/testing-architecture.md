@@ -91,23 +91,28 @@ Java's `java.time.Clock` and .NET 8's `TimeProvider` exist specifically because 
 Install:
 
 ```
-npm install -D vitest @vitest/coverage-v8 vite-tsconfig-paths
+npm install -D vitest @vitest/coverage-v8
 ```
+
+`vite-tsconfig-paths` is not needed — Vitest 4+ resolves `tsconfig.json` path aliases (`@/`) natively.
 
 `vitest.config.ts` at repo root:
 
 ```ts
+import dotenv from 'dotenv';
 import { defineConfig } from 'vitest/config';
-import tsconfigPaths from 'vite-tsconfig-paths';
+
+dotenv.config({ path: '.env.test' });
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
   },
 });
 ```
+
+The `dotenv.config` call at config load time is required because `repo/` test files read `DATABASE_URL_TEST` at module initialisation (top-level code), before Vitest's own env loading runs. Without it, the connection string is `undefined` when the test module is imported.
 
 `package.json` scripts:
 
@@ -197,8 +202,8 @@ After `logic/` is done, the question of testing `repo/` and `service/` opens —
 
 - **Database:** local Postgres. Not Neon branch (network latency, external dependency), not transaction rollback (Neon's serverless driver lacks savepoint support, which breaks when `withTransaction` is nested inside a test-level transaction).
 - **Reset strategy:** `DELETE FROM` all tables in dependency order (children before parents) in a `beforeEach`. Not `TRUNCATE` — Drizzle makes `DELETE` easier. A shared `clearDb(db)` helper in the test file handles ordering.
-- **Connection config:** `DATABASE_URL_TEST` in `.env.test` (gitignored). Vitest loads `.env.test` automatically. Keeps test DB config separate from dev DB config — prevents accidental cross-contamination.
-- **Schema setup:** `npm run db:push` with `DATABASE_URL_TEST` set, run once before the suite (or as a CI step). No separate migration script.
+- **Connection config:** `DATABASE_URL_TEST` in `.env.test` (gitignored). Loaded via `dotenv.config({ path: '.env.test' })` in `vitest.config.ts` — see Setup above for why this must happen at config load time. Keeps test DB config separate from dev DB config — prevents accidental cross-contamination.
+- **Schema setup:** `npm run db:migrate` with `DATABASE_URL` set to the test DB connection string, run once before the suite (or as a CI step). `db:migrate` reads `DATABASE_URL`, not `DATABASE_URL_TEST`.
 - **Clerk handling:** not needed. `practiceId` is an explicit parameter on every repo function — no auth context to mock.
 - **Location:** co-located, same as `logic/`. `src/repo/clients.ts` → `src/repo/clients.test.ts`.
 
@@ -215,7 +220,7 @@ After `logic/` is done, the question of testing `repo/` and `service/` opens —
 
 - **When added:** now. `logic/` at 100% coverage is past the "~10 tests across 3 files" threshold set in the original ADR.
 - **Trigger:** on push to `main` and on pull request.
-- **Postgres in CI:** GitHub Actions `services:` block spins up a Postgres container. CI workflow sets `DATABASE_URL_TEST` to the container connection string and runs `npm run db:push` before `npm test`.
+- **Postgres in CI:** GitHub Actions `services:` block spins up a Postgres container. CI workflow sets `DATABASE_URL` to the container connection string and runs `npm run db:migrate` before `npm test`.
 - **Suite in CI:** deterministic only — `logic/`, `repo/`, `service/`. LLM eval tests (Phase E, Ollama-dependent) are local-only and never run in CI. They live under a separate `npm run test:eval` command with a distinct Vitest config `include` pattern.
 
 ### Phase E eval tests — local only

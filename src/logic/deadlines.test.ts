@@ -55,12 +55,12 @@ function makeClient(overrides: Partial<Client> = {}): Client {
 describe('sa100Deadline', () => {
   describe('standard tax year', () => {
     it('returns 31 Jan of the year after the tax year', () => {
-      expect(sa100Deadline(2024)).toEqual(new Date(Date.UTC(2025, 0, 31)));
+      expect(sa100Deadline(2024)).toEqual(new Date(Date.UTC(2026, 0, 31)));
     });
   });
   describe('century boundary', () => {
     it('handles a tax year where taxYear + 1 rolls over a century boundary', () => {
-      expect(sa100Deadline(1999)).toEqual(new Date(Date.UTC(2000, 0, 31)));
+      expect(sa100Deadline(1999)).toEqual(new Date(Date.UTC(2001, 0, 31)));
     });
   });
 });
@@ -89,7 +89,7 @@ describe('nextDeadline', () => {
     });
     it('when status is not filed it returns the correct deadline date', () => {
       expect(nextDeadline(makeReturn({ status: Status.not_started }))).toEqual(
-        new Date(Date.UTC(2025, 0, 31)),
+        new Date(Date.UTC(2026, 0, 31)),
       );
     });
   });
@@ -164,7 +164,7 @@ describe('getDeadlineEntries', () => {
           name: 'Jane Smith',
           id: 'return-1',
           clientId: 'client-1',
-          deadline: new Date(Date.UTC(2025, 0, 31)),
+          deadline: new Date(Date.UTC(2026, 0, 31)),
           status: Status.not_started,
           taxYear: 2024,
           regime: Regime.sa100,
@@ -197,7 +197,7 @@ describe('getDeadlineEntries', () => {
           name: 'Jane Smith',
           id: 'return-1',
           clientId: 'client-1',
-          deadline: new Date(Date.UTC(2025, 0, 31)),
+          deadline: new Date(Date.UTC(2026, 0, 31)),
           status: Status.not_started,
           taxYear: 2024,
           regime: Regime.sa100,

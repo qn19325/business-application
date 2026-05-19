@@ -9,7 +9,6 @@
 
 ### Next queue
 
-- CI (GitHub Actions) — add first. `logic/` is at 100%; CI should be live before writing more tests. Postgres service container, `db:push` step, deterministic suite only. See `docs/adr/testing-architecture.md`.
 - `repo/` tests — local Postgres, `DELETE FROM` truncate in `beforeEach`, `DATABASE_URL_TEST` in `.env.test`.
 - `service/` tests — `vi.mock` for repos and R2, skip pure pass-throughs.
 - Full strategy: `wiki/decisions/repo-service-testing-strategy.md`.

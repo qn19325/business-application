@@ -2,7 +2,7 @@ import type { DeadlineEntry } from '@/types/calendar';
 import type { Client, MTDSubmission, TaxReturn } from '@/types/clients';
 import { MtdSubmissionStatus, Regime, Status, SubmissionType } from '@/types/clients';
 
-export const mtdSubmissionTypes: SubmissionType[] = [
+export const mtdSubmissionTypes: SubmissionTypeQuarters[] = [
   SubmissionType.q_1,
   SubmissionType.q_2,
   SubmissionType.q_3,
@@ -10,7 +10,7 @@ export const mtdSubmissionTypes: SubmissionType[] = [
 ];
 
 export function sa100Deadline(taxYear: number): Date {
-  return new Date(Date.UTC(taxYear + 1, 0, 31));
+  return new Date(Date.UTC(taxYear + 2, 0, 31));
 }
 
 type SubmissionTypeQuarters = Exclude<SubmissionType, 'eops' | 'final_declaration'>;
@@ -37,9 +37,10 @@ export function mtdSubmissionDeadlines(taxYear: number): {
   submissionType: SubmissionTypeQuarters;
   deadline: Date;
 }[] {
-  return mtdSubmissionTypes
-    .filter(isQuarterlyType)
-    .map((submissionType) => ({ submissionType, deadline: mtdDeadlineDate(submissionType, taxYear) }));
+  return mtdSubmissionTypes.filter(isQuarterlyType).map((submissionType) => ({
+    submissionType,
+    deadline: mtdDeadlineDate(submissionType, taxYear),
+  }));
 }
 
 export function nextDeadline(taxReturn: TaxReturn): Date | null {
@@ -133,6 +134,6 @@ export function groupDeadlinesByMonth(entries: DeadlineEntry[]): Record<string, 
 
 function firstUnfiledSubmission(submissions: MTDSubmission[]): MTDSubmission | undefined {
   return submissions
-    .filter((s) => mtdSubmissionTypes.includes(s.submissionType))
+    .filter((s) => isQuarterlyType(s.submissionType))
     .find((s) => s.status !== MtdSubmissionStatus.submitted);
 }
